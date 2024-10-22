@@ -8,11 +8,7 @@ const router = express.Router();
 router.post('/register', registerUser);
 router.post('/login', loginUser);
 
-// Profile update route
+// Profile update route (authenticated)
 router.put('/profile', authenticateToken, updateUserProfile);  // PUT request to update profile
-
-
-// Update user profile (authenticated)
-router.put('/profile', authenticateToken, updateUserProfile);
 
 module.exports = router;

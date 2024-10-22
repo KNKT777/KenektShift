@@ -1,5 +1,6 @@
 const { pool } = require('../config/db');
 const { sendEmail } = require('../config/emailService');
+const cron = require('node-cron');
 
 // Auto-close jobs after 30 days
 const expireJobs = async () => {
@@ -43,19 +44,24 @@ const notifyJobExpiring = async () => {
     }
 };
 
+// Schedule task to auto-close jobs every day at midnight
+cron.schedule('0 0 * * *', () => {
+    expireJobs();
+});
+
 // Post a new job
 const postJob = async (req, res) => {
-    const { title, description, location, hours, job_type } = req.body;
+    const { title, description, location, hours, job_type, hourly_rate } = req.body;
     const user_id = req.user.user_id;
 
-    if (!user_id || !title || !description || !location || !hours || !job_type) {
+    if (!user_id || !title || !description || !location || !hours || !job_type || !hourly_rate) {
         return res.status(400).json({ error: 'Please provide all required fields' });
     }
 
     try {
         const result = await pool.query(
-            'INSERT INTO jobs (user_id, title, description, location, hours, job_type) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, title, description, location, hours, job_type, status, created_at',
-            [user_id, title, description, location, hours, job_type]
+            'INSERT INTO jobs (user_id, title, description, location, hours, job_type, hourly_rate) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, title, description, location, hours, job_type, hourly_rate, status, created_at',
+            [user_id, title, description, location, hours, job_type, hourly_rate]
         );
 
         sendEmail(
@@ -112,9 +118,9 @@ const applyForJob = async (req, res) => {
     }
 };
 
-// Search and filter jobs
+// Search and filter jobs (with hourly pay filter)
 const getFilteredJobs = async (req, res) => {
-    const { location, hours, job_type } = req.query;
+    const { location, hours, job_type, minPay, maxPay } = req.query;
 
     let query = 'SELECT * FROM jobs WHERE status = $1';
     let params = ['open'];
@@ -130,6 +136,14 @@ const getFilteredJobs = async (req, res) => {
     if (job_type) {
         query += ' AND job_type = $4';
         params.push(job_type);
+    }
+    if (minPay) {
+        query += ' AND hourly_rate >= $5';
+        params.push(minPay);
+    }
+    if (maxPay) {
+        query += ' AND hourly_rate <= $6';
+        params.push(maxPay);
     }
 
     try {
@@ -222,5 +236,7 @@ module.exports = {
     getUserApplications,
     updateApplicationStatus,  // Make sure this is exported
     getAllJobs,
-    getAllApplications
+    getAllApplications,
+    expireJobs,               // Exported for manual or scheduled job expiry
+    notifyJobExpiring          // Exported for notifying users of expiring jobs
 };
