@@ -1,18 +1,23 @@
-// Updated server.js - Swagger Setup and PostgreSQL Connection
+// Updated server.js
 
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const { Pool } = require('pg');
-const twilio = require('./services/twilioService');
-const analytics = require('./services/analyticsService');
-const userRoutes = require('./routes/userRoutes');
-const jobRoutes = require('./routes/jobRoutes');
-const reviewRoutes = require('./routes/reviewRoutes');
-const billingRoutes = require('./routes/billingRoutes');
-const swaggerJsDoc = require('swagger-jsdoc');
-const swaggerUi = require('swagger-ui-express');
+import dotenv from 'dotenv';
+dotenv.config();
+import express from 'express';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import pkg from 'pg';
+// import * as twilio from './services/twilioService.js'; // Disabled Twilio import due to missing setup
+import analytics from './services/analyticsService.js'; // Use Option 1 if default export
+// OR
+import { trackEvent } from './services/analyticsService.js'; // Use Option 2 if named export
+import * as userRoutes from './routes/userRoutes.js';
+import * as jobRoutes from './routes/jobRoutes.js';
+import * as reviewRoutes from './routes/reviewRoutes.js';
+import * as billingRoutes from './routes/billingRoutes.js'; // Updated import statement for named export compatibility
+import swaggerJsDoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+
+const { Pool } = pkg;
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -22,10 +27,10 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // Routes
-app.use('/users', userRoutes);
-app.use('/jobs', jobRoutes);
-app.use('/reviews', reviewRoutes);
-app.use('/billing', billingRoutes);
+app.use('/users', userRoutes.default || userRoutes);
+app.use('/jobs', jobRoutes.default || jobRoutes);
+app.use('/reviews', reviewRoutes.default || reviewRoutes);
+app.use('/billing', billingRoutes.default || billingRoutes); // Updated to handle both default and named exports
 
 // Swagger configuration
 const swaggerOptions = {
@@ -61,28 +66,39 @@ pool.connect()
     .then(() => console.log('Connected to PostgreSQL'))
     .catch((error) => console.error('PostgreSQL connection error:', error));
 
-// Twilio Integration Example
-app.post('/send-sms', (req, res) => {
-    const { message, to } = req.body;
-    twilio.sendSMS(to, message)
-        .then(response => res.status(200).send(response))
-        .catch(error => res.status(500).send(error));
-});
+// Twilio Integration Example (Disabled temporarily due to missing Twilio setup)
+// app.post('/send-sms', (req, res) => {
+//     const { message, to } = req.body;
+//     twilio.sendSMS(to, message)
+//         .then(response => res.status(200).send(response))
+//         .catch(error => {
+//             console.error('Error sending SMS:', error);
+//             res.status(500).send(error);
+//         });
+// });
 
-// 2FA Endpoint
-app.post('/send-2fa', (req, res) => {
-    const { to, code } = req.body;
-    twilio.send2FA(to, code)
-        .then(response => res.status(200).send(response))
-        .catch(error => res.status(500).send(error));
-});
+// 2FA Endpoint (Disabled temporarily due to missing Twilio setup)
+// app.post('/send-2fa', (req, res) => {
+//     const { to, code } = req.body;
+//     twilio.send2FA(to, code)
+//         .then(response => res.status(200).send(response))
+//         .catch(error => {
+//             console.error('Error sending 2FA code:', error);
+//             res.status(500).send(error);
+//         });
+// });
 
 // Analytics Example
 app.post('/track-event', (req, res) => {
     const { event, userId } = req.body;
-    analytics.trackEvent(event, userId)
+    analytics.trackEvent(event, userId) // Use if default export
+    // OR
+    // trackEvent(event, userId) // Use if named export
         .then(response => res.status(200).send(response))
-        .catch(error => res.status(500).send(error));
+        .catch(error => {
+            console.error('Error tracking event:', error);
+            res.status(500).send(error);
+        });
 });
 
 // Start the server

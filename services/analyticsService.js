@@ -1,11 +1,28 @@
-// services/analyticsService.js
+// analyticsService.js
 
-const trackEvent = (event, userId) => {
-    return new Promise((resolve, reject) => {
-        // Placeholder: Simulate tracking event
-        console.log(`Tracking event: ${event} for user: ${userId}`);
-        resolve({ status: 'success' });
-    });
+// Option 1: Default export
+export default {
+    trackEvent: async (event, userId) => {
+        try {
+            // Your tracking logic here
+            console.log(`Tracking event: ${event}, for user: ${userId}`);
+            return { success: true };
+        } catch (error) {
+            throw new Error('Error tracking event');
+        }
+    },
+    // Add more functions as needed
 };
 
-module.exports = { trackEvent };
+// OR
+
+// Option 2: Named export
+export const trackEvent = async (event, userId) => {
+    try {
+        // Your tracking logic here
+        console.log(`Tracking event: ${event}, for user: ${userId}`);
+        return { success: true };
+    } catch (error) {
+        throw new Error('Error tracking event');
+    }
+};

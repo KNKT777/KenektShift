@@ -1,8 +1,10 @@
-const { send2FACode } = require('../services/twilioService');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const { createUser, findUserByEmail } = require('../models/userModel');
-const { pool } = require('../config/db');
+// Updated userController.js
+
+import { send2FACode } from '../services/twilioService.js';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { createUser, findUserByEmail } from '../models/userModel.js';
+import { pool } from '../config/db.js';
 
 // Generate a 6-digit 2FA code
 const generate2FACode = () => {
@@ -10,7 +12,7 @@ const generate2FACode = () => {
 };
 
 // Register a new user
-const registerUser = async (req, res) => {
+export const registerUser = async (req, res) => {
     const { name, email, password, user_type, phone } = req.body;
 
     // Ensure phone is part of the required fields
@@ -40,10 +42,8 @@ const registerUser = async (req, res) => {
     }
 };
 
-
-
 // Log in an existing user and send 2FA code
-const loginUser = async (req, res) => {
+export const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -76,7 +76,7 @@ const loginUser = async (req, res) => {
 };
 
 // Verify the 2FA code and complete login
-const verify2FA = async (req, res) => {
+export const verify2FA = async (req, res) => {
     const { email, code } = req.body;
 
     if (!email || !code) {
@@ -112,7 +112,7 @@ const verify2FA = async (req, res) => {
 };
 
 // Update user profile
-const updateUserProfile = async (req, res) => {
+export const updateUserProfile = async (req, res) => {
     const { name, profile_picture, phone } = req.body;
     const user_id = req.user.user_id;  // Extract user ID from the authenticated token
 
@@ -127,6 +127,3 @@ const updateUserProfile = async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 };
-
-// Export all functions in a single module.exports
-module.exports = { registerUser, loginUser, verify2FA, updateUserProfile };

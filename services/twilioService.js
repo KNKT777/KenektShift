@@ -1,24 +1,33 @@
-const twilio = require('twilio');
+// twilioService.js
 
-// Twilio credentials from environment variables
+import twilio from 'twilio';
+
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
-const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
+const client = twilio(accountSid, authToken);
 
-const client = new twilio(accountSid, authToken);
-
-// Function to send 2FA code via SMS
-const send2FACode = async (to, code) => {
+export const sendSMS = async (to, message) => {
     try {
-        const message = await client.messages.create({
-            body: `Your 2FA code is: ${code}`,
-            from: twilioPhoneNumber,
-            to: to
+        const response = await client.messages.create({
+            body: message,
+            from: process.env.TWILIO_PHONE_NUMBER,
+            to,
         });
-        console.log('2FA code sent:', message.sid);
+        return response;
     } catch (error) {
-        console.error('Error sending 2FA code:', error);
+        throw new Error('Failed to send SMS');
     }
 };
 
-module.exports = { send2FACode };
+export const send2FA = async (to, code) => {
+    try {
+        const response = await client.messages.create({
+            body: `Your verification code is: ${code}`,
+            from: process.env.TWILIO_PHONE_NUMBER,
+            to,
+        });
+        return response;
+    } catch (error) {
+        throw new Error('Failed to send 2FA code');
+    }
+};

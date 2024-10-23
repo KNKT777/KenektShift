@@ -1,6 +1,8 @@
-const express = require('express');
-const { registerUser, loginUser, updateUserProfile } = require('../controllers/userController');
-const authenticateToken = require('../config/auth');  // Middleware to ensure authentication
+// Updated userRoutes.js
+
+import express from 'express';
+import { registerUser, loginUser, updateUserProfile } from '../controllers/userController.js';
+import * as authModule from '../config/auth.js';  // Updated import for compatibility with named export
 
 const router = express.Router();
 
@@ -9,6 +11,6 @@ router.post('/register', registerUser);
 router.post('/login', loginUser);
 
 // Profile update route (authenticated)
-router.put('/profile', authenticateToken, updateUserProfile);  // PUT request to update profile
+router.put('/profile', authModule.default || authModule.authenticateToken, updateUserProfile);  // Updated to handle both default and named exports
 
-module.exports = router;
+export default router;
