@@ -1,4 +1,4 @@
-// Updated server.js - Migrated to PostgreSQL
+// Updated server.js - Swagger Setup and PostgreSQL Connection
 
 require('dotenv').config();
 const express = require('express');
@@ -29,7 +29,7 @@ app.use('/billing', billingRoutes);
 
 // Swagger configuration
 const swaggerOptions = {
-    swaggerDefinition: {
+    definition: {
         openapi: '3.0.0',
         info: {
             title: 'KenektShift API',
