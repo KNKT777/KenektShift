@@ -1,12 +1,15 @@
-// twilioService.js
-
 import twilio from 'twilio';
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
-const client = twilio(accountSid, authToken);
+const client = accountSid && authToken ? twilio(accountSid, authToken) : null;
 
 export const sendSMS = async (to, message) => {
+    if (!client) {
+        console.log('Twilio client is not configured. Skipping SMS sending.');
+        return;
+    }
+
     try {
         const response = await client.messages.create({
             body: message,
@@ -20,6 +23,11 @@ export const sendSMS = async (to, message) => {
 };
 
 export const send2FA = async (to, code) => {
+    if (!client) {
+        console.log('Twilio client is not configured. Skipping 2FA code sending.');
+        return;
+    }
+
     try {
         const response = await client.messages.create({
             body: `Your verification code is: ${code}`,

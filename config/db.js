@@ -1,6 +1,6 @@
-const { Pool } = require('pg');
+import pkg from 'pg';
+const { Pool } = pkg;
 
-// Create a connection pool to PostgreSQL
 const pool = new Pool({
     user: process.env.PG_USER,
     host: process.env.PG_HOST,
@@ -9,4 +9,4 @@ const pool = new Pool({
     port: process.env.PG_PORT,
 });
 
-module.exports = pool;
+export { pool };

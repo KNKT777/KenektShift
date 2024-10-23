@@ -1,7 +1,10 @@
-const express = require('express');
+// Updated billingRoutes.js - Billing Routes with ES Module Syntax
+
+import express from 'express';
+import logger from '../services/logger.js';
+import { createBilling, getBillingByUser, markBillingAsPaid, deleteBilling } from '../models/billingModel.js';
+
 const router = express.Router();
-const logger = require('../services/logger');
-const { createBilling, getBillingByUser, markBillingAsPaid, deleteBilling } = require('../models/billingModel');
 
 // Create a new billing entry
 router.post('/', async (req, res) => {
@@ -52,4 +55,4 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;

@@ -1,6 +1,6 @@
 // Updated userController.js
 
-import { send2FACode } from '../services/twilioService.js';
+import { send2FA } from '../services/twilioService.js';  // Updated import name to match export
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { createUser, findUserByEmail } from '../models/userModel.js';
@@ -61,7 +61,7 @@ export const loginUser = async (req, res) => {
         const twoFACode = generate2FACode();
 
         // Send 2FA code to user's phone number
-        await send2FACode(user.phone, twoFACode);
+        await send2FA(user.phone, twoFACode);
 
         // Store the 2FA code temporarily in the database
         await pool.query('UPDATE users SET twofa_code = $1 WHERE email = $2', [twoFACode, email]);

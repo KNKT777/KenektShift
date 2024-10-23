@@ -1,0 +1,5 @@
+{
+    "exec": "node --experimental-modules server.mjs",
+    "watch": ["server.mjs", "routes/*.js", "models/*.js"]
+  }
+  

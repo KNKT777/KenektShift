@@ -1,38 +1,15 @@
-const express = require('express');
-const authenticateToken = require('../config/auth');
-const {
-    postJob,
-    getOpenJobs,
-    applyForJob,
-    getFilteredJobs,
-    getUserApplications,
-    updateApplicationStatus,  // Ensure it's imported here
-    getAllJobs,
-    getAllApplications
-} = require('../controllers/jobController');
+// Updated jobRoutes.js - Job Routes with ES Module Syntax
+
+import express from 'express';
+import { getAllJobs, postJob, updateJob, deleteJob } from '../controllers/jobController.js';
+import authenticateToken from '../config/auth.js';
 
 const router = express.Router();
 
-// Route to post a new job
-router.post('/', authenticateToken, postJob);
+// Job routes
+router.get('/', authenticateToken, getAllJobs);      // Get all jobs
+router.post('/', authenticateToken, postJob);     // Create a new job
+router.put('/:id', authenticateToken, updateJob);   // Update an existing job
+router.delete('/:id', authenticateToken, deleteJob);  // Delete a job
 
-// Route to get all open jobs
-router.get('/', getOpenJobs);
-
-// Route to apply for a job
-router.post('/:id/apply', authenticateToken, applyForJob);
-
-// Route to search and filter jobs
-router.get('/search', getFilteredJobs);
-
-// Route to get all job applications by the user
-router.get('/applications', authenticateToken, getUserApplications);
-
-// Route to update job application status
-router.put('/applications/:id/status', authenticateToken, updateApplicationStatus);  // Ensure it's being used here
-
-// Admin routes
-router.get('/admin/jobs', authenticateToken, getAllJobs);
-router.get('/admin/applications', authenticateToken, getAllApplications);
-
-module.exports = router;
+export default router;

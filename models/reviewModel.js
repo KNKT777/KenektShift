@@ -1,13 +1,45 @@
-// models/reviewModel.js - User Review Model
+// Updated reviewModel.js - User Review Model for SQL
 
-const mongoose = require('mongoose');
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/db.js';
+import User from './userModel.js';
+import Job from './jobModel.js';
 
-const reviewSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    rating: { type: Number, required: true, min: 1, max: 5 },
-    comment: { type: String, required: true },
-    jobId: { type: mongoose.Schema.Types.ObjectId, ref: 'Job', required: true },
-    createdAt: { type: Date, default: Date.now }
+const Review = sequelize.define('Review', {
+    userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: User,
+            key: 'id'
+        }
+    },
+    rating: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: {
+            min: 1,
+            max: 5
+        }
+    },
+    comment: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    jobId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: Job,
+            key: 'id'
+        }
+    },
+    createdAt: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW
+    }
+}, {
+    timestamps: false
 });
 
-module.exports = mongoose.model('Review', reviewSchema);
+export default Review;

@@ -1,9 +1,11 @@
-const { pool } = require('../config/db');
-const { sendEmail } = require('../config/emailService');
-const cron = require('node-cron');
+// Updated jobController.js - Job Controller with ES Module Syntax
+
+import { pool } from '../config/db.js';
+import { sendEmail } from '../config/emailService.js';
+import cron from 'node-cron';
 
 // Auto-close jobs after 30 days
-const expireJobs = async () => {
+export const expireJobs = async () => {
     try {
         const result = await pool.query(
             "UPDATE jobs SET status = 'closed' WHERE status = 'open' AND created_at < NOW() - INTERVAL '30 days' RETURNING id, title, status"
@@ -24,7 +26,7 @@ const expireJobs = async () => {
 };
 
 // Notify job posters when jobs are nearing expiration (e.g., 5 days before expiration)
-const notifyJobExpiring = async () => {
+export const notifyJobExpiring = async () => {
     try {
         const result = await pool.query(
             "SELECT id, title FROM jobs WHERE status = 'open' AND created_at < NOW() - INTERVAL '25 days'"
@@ -50,7 +52,7 @@ cron.schedule('0 0 * * *', () => {
 });
 
 // Post a new job
-const postJob = async (req, res) => {
+export const postJob = async (req, res) => {
     const { title, description, location, hours, job_type, hourly_rate } = req.body;
     const user_id = req.user.user_id;
 
@@ -77,8 +79,30 @@ const postJob = async (req, res) => {
     }
 };
 
+// Update a job
+export const updateJob = async (req, res) => {
+    const job_id = req.params.id;
+    const { title, description, location, hours, job_type, hourly_rate, status } = req.body;
+
+    try {
+        const result = await pool.query(
+            'UPDATE jobs SET title = $1, description = $2, location = $3, hours = $4, job_type = $5, hourly_rate = $6, status = $7 WHERE id = $8 RETURNING *',
+            [title, description, location, hours, job_type, hourly_rate, status, job_id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Job not found' });
+        }
+
+        res.status(200).json(result.rows[0]);
+    } catch (err) {
+        console.error('Error updating job:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
 // Get jobs with pagination
-const getOpenJobs = async (req, res) => {
+export const getOpenJobs = async (req, res) => {
     const { page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;
 
@@ -95,7 +119,7 @@ const getOpenJobs = async (req, res) => {
 };
 
 // Apply for a job
-const applyForJob = async (req, res) => {
+export const applyForJob = async (req, res) => {
     const job_id = req.params.id;
     const user_id = req.user.user_id;
 
@@ -119,7 +143,7 @@ const applyForJob = async (req, res) => {
 };
 
 // Search and filter jobs (with hourly pay filter)
-const getFilteredJobs = async (req, res) => {
+export const getFilteredJobs = async (req, res) => {
     const { location, hours, job_type, minPay, maxPay } = req.query;
 
     let query = 'SELECT * FROM jobs WHERE status = $1';
@@ -156,7 +180,7 @@ const getFilteredJobs = async (req, res) => {
 };
 
 // Get user job applications
-const getUserApplications = async (req, res) => {
+export const getUserApplications = async (req, res) => {
     const user_id = req.user.user_id;
 
     try {
@@ -173,7 +197,7 @@ const getUserApplications = async (req, res) => {
 };
 
 // Update job application status
-const updateApplicationStatus = async (req, res) => {
+export const updateApplicationStatus = async (req, res) => {
     const application_id = req.params.id;
     const { status } = req.body;
 
@@ -204,9 +228,8 @@ const updateApplicationStatus = async (req, res) => {
     }
 };
 
-// Admin functions
 // Get all jobs for admin
-const getAllJobs = async (req, res) => {
+export const getAllJobs = async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM jobs');
         res.status(200).json(result.rows);
@@ -217,7 +240,7 @@ const getAllJobs = async (req, res) => {
 };
 
 // Get all job applications for admin
-const getAllApplications = async (req, res) => {
+export const getAllApplications = async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM job_applications');
         res.status(200).json(result.rows);
@@ -227,16 +250,23 @@ const getAllApplications = async (req, res) => {
     }
 };
 
-// Export all functions
-module.exports = {
-    postJob,
-    getOpenJobs,
-    applyForJob,
-    getFilteredJobs,
-    getUserApplications,
-    updateApplicationStatus,  // Make sure this is exported
-    getAllJobs,
-    getAllApplications,
-    expireJobs,               // Exported for manual or scheduled job expiry
-    notifyJobExpiring          // Exported for notifying users of expiring jobs
+// Delete a job
+export const deleteJob = async (req, res) => {
+    const job_id = req.params.id;
+
+    try {
+        const result = await pool.query(
+            'DELETE FROM jobs WHERE id = $1 RETURNING *',
+            [job_id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Job not found' });
+        }
+
+        res.status(200).json({ message: 'Job deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting job:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
 };
