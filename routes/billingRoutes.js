@@ -1,64 +1,13 @@
-// routes/billingRoutes.js - Billing Routes for User Payments with Logging and Swagger Documentation
-
 const express = require('express');
-const Billing = require('../models/billingModel');
 const router = express.Router();
-const logger = require('../services/logger'); // Winston logger service
+const logger = require('../services/logger');
+const { createBilling, getBillingByUser, markBillingAsPaid, deleteBilling } = require('../models/billingModel');
 
-/**
- * @swagger
- * components:
- *   schemas:
- *     Billing:
- *       type: object
- *       required:
- *         - userId
- *         - amount
- *       properties:
- *         userId:
- *           type: string
- *           description: The ID of the user
- *         amount:
- *           type: number
- *           description: The billing amount
- *         status:
- *           type: string
- *           description: The status of the billing (pending/paid)
- *         createdAt:
- *           type: string
- *           format: date-time
- *           description: The date the billing record was created
- *         transactionId:
- *           type: string
- *           description: The transaction ID
- */
-
-/**
- * @swagger
- * /billing:
- *   post:
- *     summary: Create a new billing entry
- *     tags: [Billing]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/Billing'
- *     responses:
- *       201:
- *         description: The billing entry was successfully created
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Billing'
- *       500:
- *         description: Some server error
- */
+// Create a new billing entry
 router.post('/', async (req, res) => {
     const { userId, amount } = req.body;
     try {
-        const newBilling = await Billing.create({ userId, amount });
+        const newBilling = await createBilling(userId, amount);
         logger.info(`Billing entry created for user ${userId}, amount: ${amount}`);
         res.status(201).json(newBilling);
     } catch (error) {
@@ -67,34 +16,10 @@ router.post('/', async (req, res) => {
     }
 });
 
-/**
- * @swagger
- * /billing/user/{userId}:
- *   get:
- *     summary: Get billing history for a user
- *     tags: [Billing]
- *     parameters:
- *       - in: path
- *         name: userId
- *         schema:
- *           type: string
- *         required: true
- *         description: The ID of the user
- *     responses:
- *       200:
- *         description: The billing history for the user
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Billing'
- *       500:
- *         description: Some server error
- */
+// Get billing history for a user
 router.get('/user/:userId', async (req, res) => {
     try {
-        const billingRecords = await Billing.find({ userId: req.params.userId });
+        const billingRecords = await getBillingByUser(req.params.userId);
         logger.info(`Billing history retrieved for user ${req.params.userId}`);
         res.status(200).json(billingRecords);
     } catch (error) {
@@ -103,32 +28,10 @@ router.get('/user/:userId', async (req, res) => {
     }
 });
 
-/**
- * @swagger
- * /billing/{id}/pay:
- *   put:
- *     summary: Mark a billing record as paid
- *     tags: [Billing]
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: The ID of the billing record
- *     responses:
- *       200:
- *         description: The billing record was successfully updated
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Billing'
- *       500:
- *         description: Some server error
- */
+// Mark a billing record as paid
 router.put('/:id/pay', async (req, res) => {
     try {
-        const billingRecord = await Billing.findByIdAndUpdate(req.params.id, { status: 'paid' }, { new: true });
+        const billingRecord = await markBillingAsPaid(req.params.id);
         logger.info(`Billing record ${req.params.id} marked as paid`);
         res.status(200).json(billingRecord);
     } catch (error) {
@@ -137,28 +40,10 @@ router.put('/:id/pay', async (req, res) => {
     }
 });
 
-/**
- * @swagger
- * /billing/{id}:
- *   delete:
- *     summary: Delete a billing record
- *     tags: [Billing]
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: The ID of the billing record
- *     responses:
- *       200:
- *         description: The billing record was successfully deleted
- *       500:
- *         description: Some server error
- */
+// Delete a billing record
 router.delete('/:id', async (req, res) => {
     try {
-        await Billing.findByIdAndDelete(req.params.id);
+        await deleteBilling(req.params.id);
         logger.info(`Billing record ${req.params.id} deleted`);
         res.status(200).json({ message: 'Billing record deleted successfully' });
     } catch (error) {
