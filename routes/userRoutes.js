@@ -1,7 +1,7 @@
 // Updated userRoutes.js - User Routes for CRUD Operations with Swagger Annotations
 
 import express from 'express';
-import { registerUser, loginUser, verify2FA, updateUserProfile } from '../controllers/userController.js';
+import { registerUser, loginUser, verify2FA, updateUserProfile, requestPasswordReset, resetPassword } from '../controllers/userController.js';
 import { authenticateToken } from '../middleware/authMiddleware.js'; // Import the authentication middleware
 
 const router = express.Router();
@@ -144,5 +144,62 @@ router.post('/verify-2fa', verify2FA);
  *         description: Internal Server Error
  */
 router.put('/profile', authenticateToken, updateUserProfile); // Add the authentication middleware
+
+/**
+ * @swagger
+ * /users/request-password-reset:
+ *   post:
+ *     summary: Request a password reset
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *             required:
+ *               - email
+ *     responses:
+ *       200:
+ *         description: Password reset token sent to email
+ *       400:
+ *         description: Bad Request - Missing or invalid fields
+ *       500:
+ *         description: Internal Server Error
+ */
+router.post('/request-password-reset', requestPasswordReset);
+
+/**
+ * @swagger
+ * /users/reset-password:
+ *   post:
+ *     summary: Reset the user's password
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               resetToken:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *             required:
+ *               - resetToken
+ *               - newPassword
+ *     responses:
+ *       200:
+ *         description: Password has been reset successfully
+ *       400:
+ *         description: Bad Request - Missing or invalid fields
+ *       500:
+ *         description: Internal Server Error
+ */
+router.post('/reset-password', resetPassword);
 
 export default router;

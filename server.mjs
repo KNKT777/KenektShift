@@ -1,3 +1,5 @@
+// Updated server.mjs - Debugging Request Issues
+
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';

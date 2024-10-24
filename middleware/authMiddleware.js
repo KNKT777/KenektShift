@@ -1,4 +1,4 @@
-// authMiddleware.js - Middleware for JWT Verification
+// Updated authMiddleware.js - Middleware for JWT Verification
 
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';

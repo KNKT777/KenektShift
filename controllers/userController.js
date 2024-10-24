@@ -1,9 +1,11 @@
-// Updated userController.js
+// Updated userController.js - Added Password Reset Feature
 
-import { send2FA } from '../services/twilioService.js';  // Updated import name to match export
+import { send2FA } from '../services/twilioService.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { pool } from '../config/db.js';
+import { sendPasswordResetEmail } from '../config/emailService.js';
+import crypto from 'crypto';
 
 // Generate a 6-digit 2FA code
 const generate2FACode = () => {
@@ -50,8 +52,8 @@ export const loginUser = async (req, res) => {
     }
 
     try {
-        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-        const user = result.rows[0];
+        const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        const user = userResult.rows[0];
 
         if (!user || !(await bcrypt.compare(password, user.password_hash))) {
             return res.status(400).json({ error: 'Invalid email or password' });
@@ -116,6 +118,10 @@ export const updateUserProfile = async (req, res) => {
     const { name, profile_picture, phone } = req.body;
     const user_id = req.user.user_id;  // Extract user ID from the authenticated token
 
+    if (!user_id) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
     try {
         const result = await pool.query(
             'UPDATE users SET name = $1, profile_picture = $2, phone = $3 WHERE id = $4 RETURNING id, name, email, profile_picture, phone',
@@ -124,6 +130,76 @@ export const updateUserProfile = async (req, res) => {
         res.status(200).json(result.rows[0]);
     } catch (err) {
         console.error('Error updating profile:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
+// Request password reset
+export const requestPasswordReset = async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ error: 'Please provide an email address' });
+    }
+
+    try {
+        const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        const user = userResult.rows[0];
+
+        if (!user) {
+            return res.status(400).json({ error: 'No account found with that email address' });
+        }
+
+        // Generate a password reset token
+        const resetToken = crypto.randomBytes(20).toString('hex');
+
+        // Store the reset token and its expiration time in the database
+        await pool.query(
+            'UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE email = $3',
+            [resetToken, Date.now() + 3600000, email]  // Token valid for 1 hour
+        );
+
+        // Send the reset token to the user's email
+        await sendPasswordResetEmail(user.email, resetToken);
+
+        res.status(200).json({ message: 'Password reset token sent to your email' });
+    } catch (err) {
+        console.error('Error requesting password reset:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
+// Reset password
+export const resetPassword = async (req, res) => {
+    const { resetToken, newPassword } = req.body;
+
+    if (!resetToken || !newPassword) {
+        return res.status(400).json({ error: 'Please provide a valid reset token and new password' });
+    }
+
+    try {
+        const userResult = await pool.query(
+            'SELECT * FROM users WHERE reset_token = $1 AND reset_token_expires > $2',
+            [resetToken, Date.now()]
+        );
+        const user = userResult.rows[0];
+
+        if (!user) {
+            return res.status(400).json({ error: 'Invalid or expired reset token' });
+        }
+
+        // Hash the new password
+        const password_hash = await bcrypt.hash(newPassword, 10);
+
+        // Update the user's password and clear the reset token
+        await pool.query(
+            'UPDATE users SET password_hash = $1, reset_token = NULL, reset_token_expires = NULL WHERE id = $2',
+            [password_hash, user.id]
+        );
+
+        res.status(200).json({ message: 'Password has been reset successfully' });
+    } catch (err) {
+        console.error('Error resetting password:', err);
         res.status(500).json({ error: 'Server error' });
     }
 };
