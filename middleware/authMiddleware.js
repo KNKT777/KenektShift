@@ -1,22 +1,15 @@
-// Updated authMiddleware.js - Middleware for JWT Verification
 
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
-dotenv.config();
+import logger from '../services/logger.js';
 
-export const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ error: 'Access denied. No token provided.' });
+function requireRole(role) {
+  return function (req, res, next) {
+    if (!req.user || req.user.role !== role) {
+      logger.warn(\`Access denied for user: \${req.user ? req.user.id : 'unknown'}; Required role: \${role}\`);
+      return res.status(403).json({ message: 'Access denied: insufficient permissions.' });
     }
+    logger.info(\`User: \${req.user.id} granted access with role: \${role}\`);
+    next();
+  };
+}
 
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;  // Attach decoded user info to request object
-        next();
-    } catch (err) {
-        res.status(403).json({ error: 'Invalid or expired token.' });
-    }
-};
+export { requireRole };
