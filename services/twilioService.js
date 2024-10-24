@@ -1,8 +1,14 @@
 import twilio from 'twilio';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = accountSid && authToken ? twilio(accountSid, authToken) : null;
+
+if (!client) {
+    console.error('Twilio client could not be initialized. Please check your Twilio credentials in the .env file.');
+}
 
 export const sendSMS = async (to, message) => {
     if (!client) {
@@ -18,6 +24,7 @@ export const sendSMS = async (to, message) => {
         });
         return response;
     } catch (error) {
+        console.error('Failed to send SMS:', error);
         throw new Error('Failed to send SMS');
     }
 };
@@ -36,6 +43,7 @@ export const send2FA = async (to, code) => {
         });
         return response;
     } catch (error) {
+        console.error('Failed to send 2FA code:', error);
         throw new Error('Failed to send 2FA code');
     }
 };

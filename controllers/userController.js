@@ -3,7 +3,6 @@
 import { send2FA } from '../services/twilioService.js';  // Updated import name to match export
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { createUser, findUserByEmail } from '../models/userModel.js';
 import { pool } from '../config/db.js';
 
 // Generate a 6-digit 2FA code
@@ -51,7 +50,8 @@ export const loginUser = async (req, res) => {
     }
 
     try {
-        const user = await findUserByEmail(email);
+        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        const user = result.rows[0];
 
         if (!user || !(await bcrypt.compare(password, user.password_hash))) {
             return res.status(400).json({ error: 'Invalid email or password' });
