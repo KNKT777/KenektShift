@@ -1,18 +1,34 @@
-import winston from 'winston';
+import 'winston-daily-rotate-file';
 
-const logger = winston.createLogger({
+// Properly declare and define the logger variable
+const logger = createLogger({
   level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.printf(({ timestamp, level, message }) => {
-      return `${timestamp} [${level.toUpperCase()}]: ${message}`;
-    })
+  format: format.combine(
+    format.timestamp(),
+    format.json()
   ),
   transports: [
-    new winston.transports.Console(), // Logs to the console
-    new winston.transports.File({ filename: 'logs/error.log', level: 'error' }), // Logs errors to file
-    new winston.transports.File({ filename: 'logs/combined.log' }) // Logs all levels to file
+    new transports.Console(), // Add console transport for debugging purposes
+    new transports.DailyRotateFile({
+      filename: 'logs/combined-%DATE%.log',
+      datePattern: 'YYYY-MM-DD',
+      zippedArchive: true,
+      maxSize: '20m',
+      maxFiles: '14d'
+    }),
+    new transports.DailyRotateFile({
+      level: 'error',
+      filename: 'logs/error-%DATE%.log',
+      datePattern: 'YYYY-MM-DD',
+      zippedArchive: true,
+      maxSize: '20m',
+      maxFiles: '14d'
+    })
   ],
 });
 
+// Make sure the logger variable is defined before exporting
+console.log('Logger initialized successfully');
+
+// Export the logger properly
 export default logger;

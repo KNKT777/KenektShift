@@ -1,0 +1,34 @@
+
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: billing_service
+        spec:
+          replicas: 3
+          selector:
+            matchLabels:
+              app: billing_service
+          template:
+            metadata:
+              labels:
+                app: billing_service
+            spec:
+              containers:
+              - name: billing_service
+                image: billing_service:latest
+                ports:
+                - containerPort: 5001
+                env:
+                - name: NODE_ENV
+                  value: "production"
+                - name: DB_HOST
+                  value: "db"
+                - name: DB_USER
+                  value: "postgres"
+                - name: DB_PASSWORD
+                  value: "postgres"
+                - name: DB_NAME
+                  value: "kenektshift_billing_service"
+                - name: REDIS_HOST
+                  value: "redis"
+        

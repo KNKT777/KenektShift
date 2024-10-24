@@ -1,0 +1,34 @@
+
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: kenektshift-app
+    spec:
+      replicas: 3
+      selector:
+        matchLabels:
+          app: kenektshift
+      template:
+        metadata:
+          labels:
+            app: kenektshift
+        spec:
+          containers:
+          - name: app
+            image: kenektshift-app:latest
+            ports:
+            - containerPort: 5002
+            env:
+            - name: NODE_ENV
+              value: "production"
+            - name: DB_HOST
+              value: "db"
+            - name: DB_USER
+              value: "postgres"
+            - name: DB_PASSWORD
+              value: "postgres"
+            - name: DB_NAME
+              value: "kenektshift"
+            - name: REDIS_HOST
+              value: "redis"
+    

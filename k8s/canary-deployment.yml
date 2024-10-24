@@ -1,0 +1,45 @@
+
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: user-service-canary
+      labels:
+        app: user-service
+        version: canary
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: user-service
+          version: canary
+      template:
+        metadata:
+          labels:
+            app: user-service
+            version: canary
+        spec:
+          containers:
+          - name: user-service
+            image: user-service:canary
+            ports:
+            - containerPort: 5001
+
+    ---
+    apiVersion: networking.istio.io/v1beta1
+    kind: VirtualService
+    metadata:
+      name: user-service
+    spec:
+      hosts:
+      - "user-service"
+      http:
+      - route:
+        - destination:
+            host: user-service
+            subset: canary
+          weight: 10
+        - destination:
+            host: user-service
+            subset: stable
+          weight: 90
+    

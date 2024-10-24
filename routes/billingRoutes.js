@@ -1,13 +1,10 @@
 // Updated billingRoutes.js - Billing Routes with ES Module Syntax
 
-import express from 'express';
-import logger from '../services/logger.js';
-import { createBilling, getBillingByUser, markBillingAsPaid, deleteBilling } from '../models/billingModel.js';
 
 const router = express.Router();
 
 // Create a new billing entry
-router.post('/', async (req, res) => {
+router.post('/v1/', async (req, res) => {
     const { userId, amount } = req.body;
     try {
         const newBilling = await createBilling(userId, amount);
@@ -20,7 +17,7 @@ router.post('/', async (req, res) => {
 });
 
 // Get billing history for a user
-router.get('/user/:userId', async (req, res) => {
+router.get('/v1/user/:userId', async (req, res) => {
     try {
         const billingRecords = await getBillingByUser(req.params.userId);
         logger.info(`Billing history retrieved for user ${req.params.userId}`);
@@ -32,7 +29,7 @@ router.get('/user/:userId', async (req, res) => {
 });
 
 // Mark a billing record as paid
-router.put('/:id/pay', async (req, res) => {
+router.put('/v1/:id/pay', async (req, res) => {
     try {
         const billingRecord = await markBillingAsPaid(req.params.id);
         logger.info(`Billing record ${req.params.id} marked as paid`);
@@ -44,7 +41,7 @@ router.put('/:id/pay', async (req, res) => {
 });
 
 // Delete a billing record
-router.delete('/:id', async (req, res) => {
+router.delete('/v1/:id', async (req, res) => {
     try {
         await deleteBilling(req.params.id);
         logger.info(`Billing record ${req.params.id} deleted`);

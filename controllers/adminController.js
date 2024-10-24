@@ -1,4 +1,3 @@
-const { pool } = require('../config/db');
 
 // Get all users
 const getAllUsers = async (req, res) => {
@@ -73,11 +72,11 @@ const deleteUser = async (req, res) => {
     }
 };
 
-module.exports = {
+export { 
     getAllUsers,
     getAllJobs,
     getAllApplications,
     updateJobStatus,
     deleteJob,
     deleteUser
-};
+ };

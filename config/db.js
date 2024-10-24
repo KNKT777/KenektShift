@@ -1,3 +1,4 @@
+
 import pkg from 'pg';
 const { Pool } = pkg;
 
@@ -12,7 +13,6 @@ const pool = new Pool({
     port: process.env.PG_PORT,
 });
 
-// Remove explicit connection attempt; Pool manages it
 console.log('PostgreSQL Pool initialized successfully');
 
-export { pool };
+export default pool;

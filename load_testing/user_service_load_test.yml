@@ -1,0 +1,16 @@
+
+    config:
+      target: 'http://localhost:5001'
+      phases:
+        - duration: 60
+          arrivalRate: 5
+    scenarios:
+      - flow:
+          - get:
+              url: '/api/v1/users'
+          - post:
+              url: '/api/v1/users/register'
+              json:
+                email: 'testuser{{ randomNumber(1, 1000) }}@example.com'
+                password: 'password123'
+    

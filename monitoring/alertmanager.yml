@@ -1,0 +1,19 @@
+
+    global:
+      resolve_timeout: 5m
+
+    route:
+      receiver: 'default'
+
+    receivers:
+    - name: 'default'
+      email_configs:
+      - to: 'alerts@example.com'
+        from: 'prometheus@example.com'
+        smarthost: 'smtp.example.com:587'
+        auth_username: 'user'
+        auth_password: 'password'
+
+    templates:
+    - '/etc/alertmanager/template/*.tmpl'
+    

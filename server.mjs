@@ -1,3 +1,5 @@
+// Updated server.mjs - Debugging Request Issues
+
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
@@ -67,3 +69,4 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Start the server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+

@@ -1,0 +1,18 @@
+
+    type Message {
+      id: ID!
+      sender_id: ID!
+      receiver_id: ID!
+      content: String!
+      timestamp: String!
+      status: String!
+    }
+
+    type Query {
+      messages(userId: ID!): [Message!]!
+    }
+
+    type Mutation {
+      sendMessage(sender_id: ID!, receiver_id: ID!, content: String!): Message!
+    }
+    
