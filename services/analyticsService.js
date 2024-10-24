@@ -1,28 +1,19 @@
-// analyticsService.js
 
-// Option 1: Default export
-export default {
-    trackEvent: async (event, userId) => {
-        try {
-            // Your tracking logic here
-            console.log(`Tracking event: ${event}, for user: ${userId}`);
-            return { success: true };
-        } catch (error) {
-            throw new Error('Error tracking event');
-        }
-    },
-    // Add more functions as needed
-};
+    import mixpanel from 'mixpanel';
 
-// OR
+    const mixpanelClient = mixpanel.init(process.env.MIXPANEL_TOKEN);
 
-// Option 2: Named export
-export const trackEvent = async (event, userId) => {
-    try {
-        // Your tracking logic here
-        console.log(`Tracking event: ${event}, for user: ${userId}`);
-        return { success: true };
-    } catch (error) {
-        throw new Error('Error tracking event');
-    }
-};
+    export const trackEvent = (eventName, properties) => {
+      mixpanelClient.track(eventName, properties);
+    };
+
+    export const trackUserSignup = (user) => {
+      trackEvent('User Signup', {
+        userId: user.id,
+        email: user.email,
+        createdAt: user.createdAt,
+      });
+    };
+
+    export default mixpanelClient;
+    

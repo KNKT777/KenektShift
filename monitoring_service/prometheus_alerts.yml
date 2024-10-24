@@ -1,0 +1,31 @@
+
+    groups:
+    - name: kenektshift_alerts
+      rules:
+      - alert: HighCPUUsage
+        expr: avg(node_cpu_seconds_total{mode!="idle"}) > 0.9
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage has exceeded 90% for more than 2 minutes."
+      
+      - alert: HighMemoryUsage
+        expr: avg(node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) < 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Memory usage detected"
+          description: "Available memory is below 10% for more than 2 minutes."
+
+      - alert: APIRequestFailures
+        expr: increase(http_request_duration_seconds_count{code=~"5.."}[2m]) > 5
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "API request failures"
+          description: "More than 5 HTTP 5xx errors have been detected in the last 2 minutes."
+    

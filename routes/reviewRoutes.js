@@ -1,11 +1,9 @@
 // Updated reviewRoutes.js - Review Routes for SQL Integration
 
-import express from 'express';
-import { pool } from '../config/db.js';
 const router = express.Router();
 
 // Create a new review
-router.post('/', async (req, res) => {
+router.post('/v1/', async (req, res) => {
     const { userId, rating, comment, jobId } = req.body;
     try {
         const result = await pool.query(
@@ -19,7 +17,7 @@ router.post('/', async (req, res) => {
 });
 
 // Get reviews for a job
-router.get('/job/:jobId', async (req, res) => {
+router.get('/v1/job/:jobId', async (req, res) => {
     try {
         const result = await pool.query(
             'SELECT * FROM reviews WHERE job_id = $1',
@@ -32,7 +30,7 @@ router.get('/job/:jobId', async (req, res) => {
 });
 
 // Get all reviews for a user
-router.get('/user/:userId', async (req, res) => {
+router.get('/v1/user/:userId', async (req, res) => {
     try {
         const result = await pool.query(
             'SELECT * FROM reviews WHERE user_id = $1',
@@ -45,7 +43,7 @@ router.get('/user/:userId', async (req, res) => {
 });
 
 // Update a review
-router.put('/:id', async (req, res) => {
+router.put('/v1/:id', async (req, res) => {
     const { rating, comment } = req.body;
     try {
         const result = await pool.query(
@@ -59,7 +57,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete a review
-router.delete('/:id', async (req, res) => {
+router.delete('/v1/:id', async (req, res) => {
     try {
         await pool.query('DELETE FROM reviews WHERE id = $1', [req.params.id]);
         res.status(200).json({ message: 'Review deleted successfully' });

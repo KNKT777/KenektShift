@@ -1,0 +1,71 @@
+
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: user-service-blue
+      labels:
+        app: user-service
+        version: blue
+    spec:
+      replicas: 3
+      selector:
+        matchLabels:
+          app: user-service
+          version: blue
+      template:
+        metadata:
+          labels:
+            app: user-service
+            version: blue
+        spec:
+          containers:
+          - name: user-service
+            image: user-service:latest
+            ports:
+            - containerPort: 5001
+
+    ---
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: user-service-green
+      labels:
+        app: user-service
+        version: green
+    spec:
+      replicas: 3
+      selector:
+        matchLabels:
+          app: user-service
+          version: green
+      template:
+        metadata:
+          labels:
+            app: user-service
+            version: green
+        spec:
+          containers:
+          - name: user-service
+            image: user-service:latest
+            ports:
+            - containerPort: 5001
+
+    ---
+    apiVersion: networking.istio.io/v1beta1
+    kind: VirtualService
+    metadata:
+      name: user-service
+    spec:
+      hosts:
+      - "user-service"
+      http:
+      - route:
+        - destination:
+            host: user-service
+            subset: blue
+          weight: 50
+        - destination:
+            host: user-service
+            subset: green
+          weight: 50
+    

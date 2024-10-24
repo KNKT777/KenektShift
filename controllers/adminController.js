@@ -1,4 +1,3 @@
-import { pool } from '../config/db';
 
 // Get all users
 const getAllUsers = async (req, res) => {

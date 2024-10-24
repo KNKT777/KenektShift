@@ -1,7 +1,5 @@
 // Updated userRoutes.js - User Routes for CRUD Operations with Swagger Annotations
 
-import express from 'express';
-import { registerUser, loginUser, verify2FA, updateUserProfile, requestPasswordReset, resetPassword } from '../controllers/userController.js';
 import { authenticateToken } from '../middleware/authMiddleware.js'; // Import the authentication middleware
 
 const router = express.Router();
@@ -52,7 +50,7 @@ const router = express.Router();
  *       500:
  *         description: Internal Server Error
  */
-router.post('/register', registerUser);
+router.post('/v1/register', registerUser);
 
 /**
  * @swagger
@@ -82,7 +80,7 @@ router.post('/register', registerUser);
  *       500:
  *         description: Internal Server Error
  */
-router.post('/login', loginUser);
+router.post('/v1/login', loginUser);
 
 /**
  * @swagger
@@ -112,7 +110,7 @@ router.post('/login', loginUser);
  *       500:
  *         description: Internal Server Error
  */
-router.post('/verify-2fa', verify2FA);
+router.post('/v1/verify-2fa', verify2FA);
 
 /**
  * @swagger
@@ -143,7 +141,7 @@ router.post('/verify-2fa', verify2FA);
  *       500:
  *         description: Internal Server Error
  */
-router.put('/profile', authenticateToken, updateUserProfile); // Add the authentication middleware
+router.put('/v1/profile', authenticateToken, updateUserProfile); // Add the authentication middleware
 
 /**
  * @swagger
@@ -170,7 +168,7 @@ router.put('/profile', authenticateToken, updateUserProfile); // Add the authent
  *       500:
  *         description: Internal Server Error
  */
-router.post('/request-password-reset', requestPasswordReset);
+router.post('/v1/request-password-reset', requestPasswordReset);
 
 /**
  * @swagger
@@ -200,6 +198,6 @@ router.post('/request-password-reset', requestPasswordReset);
  *       500:
  *         description: Internal Server Error
  */
-router.post('/reset-password', resetPassword);
+router.post('/v1/reset-password', resetPassword);
 
 export default router;

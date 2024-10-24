@@ -1,0 +1,45 @@
+
+    apiVersion: networking.istio.io/v1beta1
+    kind: VirtualService
+    metadata:
+      name: user-service
+    spec:
+      hosts:
+      - "user-service"
+      http:
+      - route:
+        - destination:
+            host: user-service
+            port:
+              number: 5001
+
+    ---
+    apiVersion: networking.istio.io/v1beta1
+    kind: VirtualService
+    metadata:
+      name: job-management-service
+    spec:
+      hosts:
+      - "job-management-service"
+      http:
+      - route:
+        - destination:
+            host: job-management-service
+            port:
+              number: 5002
+
+    ---
+    apiVersion: networking.istio.io/v1beta1
+    kind: VirtualService
+    metadata:
+      name: billing-service
+    spec:
+      hosts:
+      - "billing-service"
+      http:
+      - route:
+        - destination:
+            host: billing-service
+            port:
+              number: 5003
+    
