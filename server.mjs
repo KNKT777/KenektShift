@@ -9,6 +9,8 @@ const { Pool } = pkg;  // Destructuring Pool from the imported package
 import swaggerJsDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { ApolloServer } from 'apollo-server-express';
+import { readFileSync } from 'fs';
+import path from 'path';
 
 import { sendSMS, send2FA } from './services/twilioService.js';
 import analytics from './services/analyticsService.js';
@@ -16,9 +18,7 @@ import userRoutes from './routes/userRoutes.js';
 import jobRoutes from './routes/jobRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import billingRoutes from './routes/billingRoutes.js';
-import typeDefs from './graphql_gateway/schema.js';
 import resolvers from './graphql_gateway/resolvers.js';
-
 
 // Load environment variables
 dotenv.config();
@@ -41,43 +41,51 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Set up Apollo Server
+const typeDefs = readFileSync(path.join(__dirname, 'graphql_gateway', 'schema.graphql'), 'utf-8');
 const server = new ApolloServer({ typeDefs, resolvers });
-await server.start();
-server.applyMiddleware({ app });
 
-// Middleware
-app.use(cors());
-app.use(bodyParser.json());
+async function startServer() {
+  await server.start();
+  server.applyMiddleware({ app });
+  
+  // Middleware
+  app.use(cors());
+  app.use(bodyParser.json());
 
-// Routes
-app.use('/users', userRoutes);
-app.use('/jobs', jobRoutes);
-app.use('/reviews', reviewRoutes);
-app.use('/billing', billingRoutes);
+  // Routes
+  app.use('/users', userRoutes);
+  app.use('/jobs', jobRoutes);
+  app.use('/reviews', reviewRoutes);
+  app.use('/billing', billingRoutes);
 
-// Swagger configuration
-const swaggerOptions = {
-  swaggerDefinition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'KenektShift API',
-      version: '1.0.0',
-      description: 'API for KenektShift Platform',
-    },
-    servers: [
-      {
-        url: `http://localhost:${PORT}`,
+  // Swagger configuration
+  const swaggerOptions = {
+    swaggerDefinition: {
+      openapi: '3.0.0',
+      info: {
+        title: 'KenektShift API',
+        version: '1.0.0',
+        description: 'API for KenektShift Platform',
       },
-    ],
-  },
-  apis: ['./routes/*.js'], // Path to your API documentation files
-};
+      servers: [
+        {
+          url: `http://localhost:${PORT}`,
+        },
+      ],
+    },
+    apis: ['./routes/*.js'], // Path to your API documentation files
+  };
 
-const swaggerDocs = swaggerJsDoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+  const swaggerDocs = swaggerJsDoc(swaggerOptions);
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`GraphQL endpoint available at http://localhost:${PORT}${server.graphqlPath}`);
+  // Start the server
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`GraphQL endpoint available at http://localhost:${PORT}${server.graphqlPath}`);
+  });
+}
+
+startServer().catch((error) => {
+  console.error('Error starting Apollo Server:', error);
 });

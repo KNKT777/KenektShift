@@ -1,128 +1,116 @@
+version: '3.8'
 
-    version: '3.7'
-
-    services:
-      app:
-        build: .
-        ports:
-          - "5002:5002"
-        depends_on:
-          - redis
-          - db
-        environment:
-          - NODE_ENV=production
-          - PORT=5002
-          - DB_HOST=db
-          - DB_USER=postgres
-          - DB_PASSWORD=postgres
-          - DB_NAME=kenektshift
-          - REDIS_HOST=redis
-        volumes:
-          - .:/app
-
-      db:
-        image: postgres:13
-        environment:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: kenektshift
-        volumes:
-          - pgdata:/var/lib/postgresql/data
-
-      redis:
-        image: redis:alpine
-        ports:
-          - "6379:6379"
-
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5002:5002"
+    depends_on:
+      - redis
+      - db
+    environment:
+      - NODE_ENV=production
+      - PORT=5002
+      - DB_HOST=db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=kenektshift
+      - REDIS_HOST=redis
     volumes:
-      pgdata:
-    
-    version: '3.7'
+      - .:/app
 
-    services:
-      prometheus:
-        image: prom/prometheus
-        volumes:
-          - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-        ports:
-          - "9090:9090"
-
-      grafana:
-        image: grafana/grafana
-        ports:
-          - "3000:3000"
-        volumes:
-          - grafana-data:/var/lib/grafana
-        environment:
-          - GF_SECURITY_ADMIN_PASSWORD=admin
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: kenektshift
+    ports:
+      - "5433:5432"  # Changed to avoid conflict with default PostgreSQL instance
     volumes:
-      grafana-data:
-    
-    version: '3.7'
+      - pgdata:/var/lib/postgresql/data
 
-    services:
-      db-master:
-        image: postgres:13
-        environment:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: kenektshift
-        ports:
-          - "5432:5432"
-        volumes:
-          - pgmasterdata:/var/lib/postgresql/data
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
 
-      db-replica:
-        image: postgres:13
-        environment:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: kenektshift
-          POSTGRES_PRIMARY_HOST: db-master
-        ports:
-          - "5433:5432"
-        volumes:
-          - pgreplicadata:/var/lib/postgresql/data
-
+  prometheus:
+    image: prom/prometheus
     volumes:
-      pgmasterdata:
-      pgreplicadata:
-    
-    version: '3.7'
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
 
-    services:
-      kong-db:
-        image: postgres:13
-        environment:
-          POSTGRES_USER: kong
-          POSTGRES_DB: kong
-          POSTGRES_PASSWORD: kong
-        ports:
-          - "5432:5432"
-        volumes:
-          - kong-db-data:/var/lib/postgresql/data
-
-      kong:
-        image: kong:latest
-        environment:
-          KONG_DATABASE: postgres
-          KONG_PG_HOST: kong-db
-          KONG_PG_USER: kong
-          KONG_PG_PASSWORD: kong
-          KONG_PROXY_ACCESS_LOG: /dev/stdout
-          KONG_ADMIN_ACCESS_LOG: /dev/stdout
-          KONG_PROXY_ERROR_LOG: /dev/stderr
-          KONG_ADMIN_ERROR_LOG: /dev/stderr
-          KONG_ADMIN_LISTEN: "0.0.0.0:8001"
-        ports:
-          - "8000:8000"
-          - "8001:8001"
-        depends_on:
-          - kong-db
-        volumes:
-          - kong-data:/usr/local/kong
-
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
     volumes:
-      kong-db-data:
-      kong-data:
-    
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+
+  db-master:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: kenektshift
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgmasterdata:/var/lib/postgresql/data
+
+  db-replica:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: kenektshift
+      POSTGRES_PRIMARY_HOST: db-master
+    ports:
+      - "5435:5432"
+    volumes:
+      - pgreplicadata:/var/lib/postgresql/data
+
+  kong-db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: kong
+      POSTGRES_DB: kong
+      POSTGRES_PASSWORD: kong
+    ports:
+      - "5436:5432"
+    volumes:
+      - kong-db-data:/var/lib/postgresql/data
+
+  kong:
+    image: kong:latest
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-db
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kong
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: "0.0.0.0:8001"
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    depends_on:
+      - kong-db
+    volumes:
+      - kong-data:/usr/local/kong
+
+volumes:
+  pgdata:
+  grafana-data:
+  pgmasterdata:
+  pgreplicadata:
+  kong-db-data:
+  kong-data:
