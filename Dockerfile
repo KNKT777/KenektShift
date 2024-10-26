@@ -3,21 +3,26 @@
 # Build stage
 FROM node:18-alpine AS builder
 WORKDIR /usr/src/app
+
+# Copy package.json and package-lock.json to install dependencies
 COPY package*.json ./
 RUN npm install
+
+# Copy the entire source code
 COPY . .
 
 # Production stage
 FROM node:18-alpine
 WORKDIR /usr/src/app
+
+# Copy necessary files from the builder stage
 COPY --from=builder /usr/src/app .
-RUN npm install -g nodemon
-RUN mkdir -p /usr/src/app/graphql_gateway
-COPY graphql_gateway/schema.graphql graphql_gateway/resolvers.js /usr/src/app/graphql_gateway/
-# Remove COPY for .env here
+
+# Install only production dependencies
+RUN npm prune --production
 
 # Expose the port the app runs on
 EXPOSE 5002
 
 # Command to run the application
-CMD ["nodemon", "server.mjs"]
+CMD ["node", "server.mjs"]

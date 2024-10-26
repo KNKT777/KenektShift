@@ -1,6 +1,6 @@
 // resolvers.js
 
-import { pool } from '../db.js';  // Import the PostgreSQL pool for database queries
+import pool from '../config/db.js';  // Import default export from db.js
 
 const resolvers = {
   Query: {
