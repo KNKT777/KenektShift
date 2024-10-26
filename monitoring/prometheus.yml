@@ -1,9 +1,32 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
 
-    global:
-      scrape_interval: 15s
+scrape_configs:
+  - job_name: 'docker'
+    static_configs:
+      - targets:
+          - 'app:5002'
+          - 'job-service:5003'
+          - 'user-service:5004'
+          - 'db:5432'
+          - 'redis:6379'
+          - 'kong:8001'
+          - 'prometheus:9090'
+        labels:
+          group: 'docker-services'
 
-    scrape_configs:
-      - job_name: 'node'
-        static_configs:
-          - targets: ['app:5002']
-    
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['localhost:9100']
+        labels:
+          group: 'node-metrics'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - 'localhost:9093'
+
+rule_files:
+  - 'alert.rules.yml'

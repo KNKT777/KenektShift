@@ -1,42 +1,32 @@
-# Dockerfile for KenektShift Backend
-
-# Stage 1: Builder Stage for building the application
+# Stage 1 - Builder Stage
 FROM node:18-alpine AS builder
 
-# Set the working directory in the container
+# Set the working directory
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json to the container
+# Copy package files and install dependencies
 COPY package*.json ./
-
-# Install all dependencies including development dependencies with --legacy-peer-deps to avoid conflicts
 RUN npm install --include=dev --legacy-peer-deps
 
-# Copy all the source code into the container
+# Copy the entire application code
 COPY . .
 
-# Stage 2: Production Stage for serving the application
+# Stage 2 - Production Stage
 FROM node:18-alpine
 
-# Set the working directory in the container
+# Set the working directory
 WORKDIR /usr/src/app
 
-# Copy over the node_modules from the builder stage
+# Copy node_modules and application code from the builder stage
 COPY --from=builder /usr/src/app/node_modules ./node_modules
-# Copy over all the code
 COPY --from=builder /usr/src/app .
 
-# Install nodemon globally
-RUN npm install -g nodemon
-
-# Create necessary directories for GraphQL
-RUN mkdir -p /usr/src/app/graphql_gateway
-
-# Copy GraphQL files into the container
-COPY graphql_gateway/schema.graphql graphql_gateway/resolvers.js /usr/src/app/graphql_gateway/
+# Install nodemon (Development dependency) removed for production
+# Install required packages for production
+RUN npm install -g
 
 # Expose the port the app runs on
 EXPOSE 5002
 
-# Run the application with nodemon
-CMD ["nodemon", "server.mjs"]
+# Use node to run the application
+CMD ["node", "server.mjs"]

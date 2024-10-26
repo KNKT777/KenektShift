@@ -1,5 +1,11 @@
+# Ignore node_modules (they will be installed within the Docker container)
 node_modules
+
+# Ignore other unnecessary files and directories
 npm-debug.log
-.dockerignore
 .git
 .gitignore
+.dockerignore
+
+# Ignore local development files
+.DS_Store

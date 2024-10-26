@@ -3,7 +3,7 @@ version: '3.8'
 services:
   app:
     build:
-      context: ./KenektShift  # Ensure this is the correct path to your application
+      context: .  # Using the root directory where Dockerfile is located
       dockerfile: Dockerfile
     ports:
       - "5002:5002"
@@ -17,28 +17,49 @@ services:
       - PORT=5002
       - DB_HOST=db
       - DB_USER=postgres
-      - DB_PASSWORD=postgres
+      - DB_PASSWORD=your_db_password_here  # Replace with your actual DB password
       - DB_NAME=kenektshift
       - REDIS_HOST=redis
-      - USER_SERVICE_URL=http://user-service:5004
+      - USER_SERVICE_URL=http://142.93.149.17:5004
     volumes:
-      - ./KenektShift:/usr/src/app
+      - ./KenektShift-Almost-Ready:/usr/src/app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - app_net
 
   db:
     image: postgres:13
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: your_db_password_here  # Replace with your actual DB password
       POSTGRES_DB: kenektshift
     ports:
       - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - db_net
 
   redis:
     image: redis:alpine
     ports:
-      - "6379:6379"
+      - "6380:6379"  # Use a different port to avoid conflict with the system Redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app_net
 
   prometheus:
     image: prom/prometheus
@@ -46,6 +67,9 @@ services:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
+    networks:
+      - app_net
+      - db_net
 
   grafana:
     image: grafana/grafana
@@ -55,41 +79,49 @@ services:
       - grafana-data:/var/lib/grafana
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_SERVER_ROOT_URL=http://localhost:3000
+      - GF_SERVER_ROOT_URL=http://142.93.149.17:3000
+    networks:
+      - app_net
 
   db-master:
     image: postgres:13
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: your_db_password_here  # Replace with your actual DB password
       POSTGRES_DB: kenektshift
     ports:
       - "5434:5432"
     volumes:
       - pgmasterdata:/var/lib/postgresql/data
+    networks:
+      - db_net
 
   db-replica:
     image: postgres:13
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: your_db_password_here  # Replace with your actual DB password
       POSTGRES_DB: kenektshift
       POSTGRES_PRIMARY_HOST: db-master
     ports:
       - "5435:5432"
     volumes:
       - pgreplicadata:/var/lib/postgresql/data
+    networks:
+      - db_net
 
   kong-db:
     image: postgres:13
     environment:
       POSTGRES_USER: kong
       POSTGRES_DB: kong
-      POSTGRES_PASSWORD: kong
+      POSTGRES_PASSWORD: your_kong_db_password_here  # Replace with your actual Kong DB password
     ports:
       - "5436:5432"
     volumes:
       - kong-db-data:/var/lib/postgresql/data
+    networks:
+      - db_net
 
   kong:
     image: kong:latest
@@ -97,7 +129,7 @@ services:
       KONG_DATABASE: postgres
       KONG_PG_HOST: kong-db
       KONG_PG_USER: kong
-      KONG_PG_PASSWORD: kong
+      KONG_PG_PASSWORD: your_kong_db_password_here  # Replace with your actual Kong DB password
       KONG_PROXY_ACCESS_LOG: /dev/stdout
       KONG_ADMIN_ACCESS_LOG: /dev/stdout
       KONG_PROXY_ERROR_LOG: /dev/stderr
@@ -110,6 +142,9 @@ services:
       - kong-db
     volumes:
       - kong-data:/usr/local/kong
+    networks:
+      - app_net
+      - db_net
 
   job-service:
     build:
@@ -122,12 +157,20 @@ services:
       - PORT=5003
       - DB_HOST=db
       - DB_USER=postgres
-      - DB_PASSWORD=postgres
+      - DB_PASSWORD=your_db_password_here  # Replace with your actual DB password
       - DB_NAME=kenektshift
     volumes:
       - ./microservices/job-service:/app
     depends_on:
       - db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - app_net
+      - db_net
 
   user-service:
     build:
@@ -140,15 +183,25 @@ services:
       - PORT=5004
       - DB_HOST=db
       - DB_USER=postgres
-      - DB_PASSWORD=postgres
+      - DB_PASSWORD=your_db_password_here  # Replace with your actual DB password
       - DB_NAME=kenektshift
     volumes:
       - ./microservices/user-service:/app
     depends_on:
       - db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - app_net
+      - db_net
 
 networks:
-  default:
+  app_net:
+    driver: bridge
+  db_net:
     driver: bridge
 
 volumes:
