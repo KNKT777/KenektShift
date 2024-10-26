@@ -10,6 +10,8 @@ services:
     depends_on:
       - redis
       - db
+      - job-service
+      - user-service
     environment:
       - NODE_ENV=production
       - PORT=5002
@@ -106,6 +108,42 @@ services:
       - kong-db
     volumes:
       - kong-data:/usr/local/kong
+
+  job-service:
+    build:
+      context: ./microservices/job-service
+      dockerfile: Dockerfile
+    ports:
+      - "5003:5003"
+    environment:
+      - NODE_ENV=production
+      - PORT=5003
+      - DB_HOST=db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=kenektshift
+    volumes:
+      - ./microservices/job-service:/app
+    depends_on:
+      - db
+
+  user-service:
+    build:
+      context: ./microservices/user-service
+      dockerfile: Dockerfile
+    ports:
+      - "5004:5004"
+    environment:
+      - NODE_ENV=production
+      - PORT=5004
+      - DB_HOST=db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=kenektshift
+    volumes:
+      - ./microservices/user-service:/app
+    depends_on:
+      - db
 
 volumes:
   pgdata:
