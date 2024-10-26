@@ -36,4 +36,5 @@ function requireRole(role) {
   };
 }
 
-export { requireRole, authenticateToken };
+// Updated to provide named exports for both functions
+export { authenticateToken, requireRole };

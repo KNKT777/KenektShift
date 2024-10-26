@@ -1,6 +1,5 @@
-const { pool } = require('../config/db');
-const { sendEmail } = require('../config/emailService');
-const cron = require('node-cron');
+import { sendEmail } from '../config/emailService.js';
+import cron from 'node-cron';
 
 // Auto-close jobs after 30 days
 const expireJobs = async () => {
@@ -11,7 +10,7 @@ const expireJobs = async () => {
 
         result.rows.forEach(job => {
             sendEmail(
-                'admin@example.com',
+                'admin@example.com', // Replace with appropriate admin email or dynamic email address
                 'Job Auto-Closed',
                 `Your job titled "${job.title}" has been automatically closed due to inactivity.`
             );
@@ -32,7 +31,7 @@ const notifyJobExpiring = async () => {
 
         result.rows.forEach(job => {
             sendEmail(
-                'admin@example.com',
+                'admin@example.com', // Replace with appropriate admin email or dynamic email address
                 'Job Expiring Soon',
                 `Your job titled "${job.title}" will expire in 5 days. Please take action if necessary.`
             );
@@ -65,7 +64,7 @@ const postJob = async (req, res) => {
         );
 
         sendEmail(
-            'admin@example.com',
+            'admin@example.com', // Replace with appropriate admin email or dynamic email address
             'New Job Posted',
             `A new job titled "${title}" has been posted in ${location}.`
         );
@@ -106,7 +105,7 @@ const applyForJob = async (req, res) => {
         );
 
         sendEmail(
-            'admin@example.com',
+            'admin@example.com', // Replace with appropriate admin email or dynamic email address
             'New Job Application',
             `A new application has been submitted for Job ID: ${job_id}.`
         );
@@ -114,6 +113,28 @@ const applyForJob = async (req, res) => {
         res.status(201).json(result.rows[0]);
     } catch (err) {
         console.error('Error applying for job:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
+// Update an existing job
+const updateJob = async (req, res) => {
+    const job_id = req.params.id;
+    const { title, description, location, hours, job_type, hourly_rate } = req.body;
+
+    try {
+        const result = await pool.query(
+            'UPDATE jobs SET title = $1, description = $2, location = $3, hours = $4, job_type = $5, hourly_rate = $6 WHERE id = $7 RETURNING *',
+            [title, description, location, hours, job_type, hourly_rate, job_id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Job not found' });
+        }
+
+        res.status(200).json(result.rows[0]);
+    } catch (err) {
+        console.error('Error updating job:', err);
         res.status(500).json({ error: 'Server error' });
     }
 };
@@ -204,6 +225,27 @@ const updateApplicationStatus = async (req, res) => {
     }
 };
 
+// Delete a job by ID
+const deleteJob = async (req, res) => {
+    const job_id = req.params.id;
+
+    try {
+        const result = await pool.query(
+            'DELETE FROM jobs WHERE id = $1 RETURNING id, title',
+            [job_id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Job not found' });
+        }
+
+        res.status(200).json({ message: `Job titled "${result.rows[0].title}" deleted successfully.` });
+    } catch (err) {
+        console.error('Error deleting job:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
 // Admin functions
 // Get all jobs for admin
 const getAllJobs = async (req, res) => {
@@ -228,15 +270,17 @@ const getAllApplications = async (req, res) => {
 };
 
 // Export all functions
-module.exports = {
+export {
     postJob,
     getOpenJobs,
     applyForJob,
     getFilteredJobs,
     getUserApplications,
-    updateApplicationStatus,  // Make sure this is exported
+    updateApplicationStatus,
     getAllJobs,
     getAllApplications,
-    expireJobs,               // Exported for manual or scheduled job expiry
-    notifyJobExpiring          // Exported for notifying users of expiring jobs
+    expireJobs,
+    notifyJobExpiring,
+    updateJob,
+    deleteJob
 };

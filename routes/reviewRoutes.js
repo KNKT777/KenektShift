@@ -1,5 +1,7 @@
 // Updated reviewRoutes.js - Review Routes for SQL Integration
 
+import express from 'express';
+
 const router = express.Router();
 
 // Create a new review

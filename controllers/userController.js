@@ -1,132 +1,204 @@
-const { send2FACode } = require('../services/twilioService');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const { createUser, findUserByEmail } = require('../models/userModel');
-const { pool } = require('../config/db');
+// userController.js
 
-// Generate a 6-digit 2FA code
-const generate2FACode = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();  // Generates a 6-digit code
-};
+import axios from 'axios';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://user-service:5004'; 
 
 // Register a new user
-const registerUser = async (req, res) => {
-    const { name, email, password, user_type, phone } = req.body;
+export const registerUser = async (req, res) => {
+  const { name, email, password, user_type, phone } = req.body;
 
-    // Ensure phone is part of the required fields
-    if (!name || !email || !password || !user_type || !phone) {
-        return res.status(400).json({ error: 'Please provide all required fields' });
+  // Ensure all required fields are provided
+  if (!name || !email || !password || !user_type || !phone) {
+    return res.status(400).json({ error: 'Please provide all required fields' });
+  }
+
+  try {
+    // Make a request to the user microservice
+    const response = await axios.post(`${USER_SERVICE_URL}/v1/register`, {
+      name,
+      email,
+      password,
+      user_type,
+      phone,
+    });
+
+    res.status(201).json(response.data); // Return the response from the user microservice
+  } catch (err) {
+    console.error('Error during registration:', err);
+
+    // If the error is a response error from the microservice, relay the status and message
+    if (err.response) {
+      return res.status(err.response.status).json({ error: err.response.data.error });
     }
 
-    try {
-        const password_hash = await bcrypt.hash(password, 10);
-
-        // Insert user into the database with the phone number
-        const user = await pool.query(
-            'INSERT INTO users (name, email, password_hash, user_type, phone) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email, phone',
-            [name, email, password_hash, user_type, phone]
-        );
-
-        res.status(201).json(user.rows[0]);  // Return the newly created user data
-    } catch (err) {
-        console.error('Error during registration:', err);
-
-        // Check if the error is related to a duplicate email
-        if (err.code === '23505') {
-            return res.status(400).json({ error: 'Email already exists. Please use a different email.' });
-        }
-
-        res.status(500).json({ error: 'Server error' });
-    }
+    res.status(500).json({ error: 'Server error' });
+  }
 };
 
-
-
 // Log in an existing user and send 2FA code
-const loginUser = async (req, res) => {
-    const { email, password } = req.body;
+export const loginUser = async (req, res) => {
+  const { email, password } = req.body;
 
-    if (!email || !password) {
-        return res.status(400).json({ error: 'Please provide email and password' });
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Please provide email and password' });
+  }
+
+  try {
+    // Make a request to the user microservice
+    const response = await axios.post(`${USER_SERVICE_URL}/v1/login`, {
+      email,
+      password,
+    });
+
+    res.status(200).json(response.data);
+  } catch (err) {
+    console.error('Login error:', err);
+
+    if (err.response) {
+      return res.status(err.response.status).json({ error: err.response.data.error });
     }
 
-    try {
-        const user = await findUserByEmail(email);
-
-        if (!user || !(await bcrypt.compare(password, user.password_hash))) {
-            return res.status(400).json({ error: 'Invalid email or password' });
-        }
-
-        // Generate a 2FA code
-        const twoFACode = generate2FACode();
-
-        // Send 2FA code to user's phone number
-        await send2FACode(user.phone, twoFACode);
-
-        // Store the 2FA code temporarily in the database
-        await pool.query('UPDATE users SET twofa_code = $1 WHERE email = $2', [twoFACode, email]);
-
-        res.status(200).json({
-            message: '2FA code sent to your phone. Please verify to complete login.'
-        });
-    } catch (err) {
-        console.error('Login error:', err);
-        res.status(500).json({ error: 'Server error' });
-    }
+    res.status(500).json({ error: 'Server error' });
+  }
 };
 
 // Verify the 2FA code and complete login
-const verify2FA = async (req, res) => {
-    const { email, code } = req.body;
+export const verify2FA = async (req, res) => {
+  const { email, code } = req.body;
 
-    if (!email || !code) {
-        return res.status(400).json({ error: 'Please provide email and 2FA code' });
+  if (!email || !code) {
+    return res.status(400).json({ error: 'Please provide email and 2FA code' });
+  }
+
+  try {
+    // Make a request to the user microservice
+    const response = await axios.post(`${USER_SERVICE_URL}/v1/verify-2fa`, {
+      email,
+      code,
+    });
+
+    res.status(200).json(response.data);
+  } catch (err) {
+    console.error('2FA verification error:', err);
+
+    if (err.response) {
+      return res.status(err.response.status).json({ error: err.response.data.error });
     }
 
-    try {
-        const result = await pool.query('SELECT id, email, twofa_code FROM users WHERE email = $1', [email]);
-        const user = result.rows[0];
-
-        if (!user || user.twofa_code !== code) {
-            return res.status(400).json({ error: 'Invalid 2FA code' });
-        }
-
-        // Once the 2FA code is verified, generate the JWT token
-        const token = jwt.sign(
-            { user_id: user.id, email: user.email },
-            process.env.JWT_SECRET,
-            { expiresIn: '24h' }
-        );
-
-        // Clear the 2FA code after verification
-        await pool.query('UPDATE users SET twofa_code = NULL WHERE email = $1', [email]);
-
-        res.status(200).json({
-            token,
-            message: '2FA verified successfully. Here is your token.',
-        });
-    } catch (err) {
-        console.error('2FA verification error:', err);
-        res.status(500).json({ error: 'Server error' });
-    }
+    res.status(500).json({ error: 'Server error' });
+  }
 };
 
 // Update user profile
-const updateUserProfile = async (req, res) => {
-    const { name, profile_picture, phone } = req.body;
-    const user_id = req.user.user_id;  // Extract user ID from the authenticated token
+export const updateUserProfile = async (req, res) => {
+  const { name, profile_picture, phone } = req.body;
+  const user_id = req.user.user_id; // Extract user ID from the authenticated token
 
-    try {
-        const result = await pool.query(
-            'UPDATE users SET name = $1, profile_picture = $2, phone = $3 WHERE id = $4 RETURNING id, name, email, profile_picture, phone',
-            [name, profile_picture, phone, user_id]
-        );
-        res.status(200).json(result.rows[0]);
-    } catch (err) {
-        console.error('Error updating profile:', err);
-        res.status(500).json({ error: 'Server error' });
+  if (!user_id) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // Make a request to the user microservice
+    const response = await axios.put(`${USER_SERVICE_URL}/v1/profile`, {
+      name,
+      profile_picture,
+      phone,
+    }, {
+      headers: {
+        Authorization: req.headers.authorization, // Pass along the auth token
+      },
+    });
+
+    res.status(200).json(response.data);
+  } catch (err) {
+    console.error('Error updating profile:', err);
+
+    if (err.response) {
+      return res.status(err.response.status).json({ error: err.response.data.error });
     }
+
+    res.status(500).json({ error: 'Server error' });
+  }
 };
 
-// Export all functions in a single module.exports
-module.exports = { registerUser, loginUser, verify2FA, updateUserProfile };
+// Request password reset
+export const requestPasswordReset = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: 'Please provide email' });
+  }
+
+  try {
+    // Make a request to the user microservice
+    const response = await axios.post(`${USER_SERVICE_URL}/v1/request-password-reset`, {
+      email,
+    });
+
+    res.status(200).json(response.data);
+  } catch (err) {
+    console.error('Error requesting password reset:', err);
+
+    if (err.response) {
+      return res.status(err.response.status).json({ error: err.response.data.error });
+    }
+
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// Reset password
+export const resetPassword = async (req, res) => {
+  const { resetToken, newPassword } = req.body;
+
+  if (!resetToken || !newPassword) {
+    return res.status(400).json({ error: 'Please provide resetToken and newPassword' });
+  }
+
+  try {
+    // Make a request to the user microservice
+    const response = await axios.post(`${USER_SERVICE_URL}/v1/reset-password`, {
+      resetToken,
+      newPassword,
+    });
+
+    res.status(200).json(response.data);
+  } catch (err) {
+    console.error('Error resetting password:', err);
+
+    if (err.response) {
+      return res.status(err.response.status).json({ error: err.response.data.error });
+    }
+
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// Helper function to handle errors
+const handleErrorResponse = (err, res) => {
+    console.error('Error:', err.message);
+    if (err.response) {
+      return res.status(err.response.status).json({ error: err.response.data.error });
+    }
+    res.status(500).json({ error: 'Server error' });
+  };
+  
+  // Example usage in your registerUser function
+  try {
+    const response = await axios.post(`${USER_SERVICE_URL}/v1/register`, {
+      name,
+      email,
+      password,
+      user_type,
+      phone,
+    });
+    res.status(201).json(response.data);
+  } catch (err) {
+    handleErrorResponse(err, res);
+  }
+  

@@ -16,3 +16,9 @@ const pool = new Pool({
 console.log('PostgreSQL Pool initialized successfully');
 
 export default pool;
+
+if (!process.env.PG_USER || !process.env.PG_HOST || !process.env.PG_DATABASE || !process.env.PG_PASSWORD || !process.env.PG_PORT) {
+    console.error('Missing one or more PostgreSQL environment variables.');
+    process.exit(1);
+  }
+  

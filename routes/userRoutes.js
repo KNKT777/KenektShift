@@ -1,5 +1,14 @@
-// Updated userRoutes.js - User Routes for CRUD Operations with Swagger Annotations
+// userRoutes.js - User Routes for CRUD Operations with Swagger Annotations
 
+import express from 'express';
+import {
+  registerUser,
+  loginUser,
+  verify2FA,
+  updateUserProfile,
+  requestPasswordReset,
+  resetPassword,
+} from '../controllers/userController.js';
 import { authenticateToken } from '../middleware/authMiddleware.js'; // Import the authentication middleware
 
 const router = express.Router();
@@ -32,7 +41,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /users/register:
+ * /v1/register:
  *   post:
  *     summary: Register a new user
  *     tags: [Users]
@@ -54,7 +63,7 @@ router.post('/v1/register', registerUser);
 
 /**
  * @swagger
- * /users/login:
+ * /v1/login:
  *   post:
  *     summary: Log in an existing user
  *     tags: [Users]
@@ -64,14 +73,14 @@ router.post('/v1/register', registerUser);
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - email
+ *               - password
  *             properties:
  *               email:
  *                 type: string
  *               password:
  *                 type: string
- *             required:
- *               - email
- *               - password
  *     responses:
  *       200:
  *         description: Login successful, 2FA code sent
@@ -84,7 +93,7 @@ router.post('/v1/login', loginUser);
 
 /**
  * @swagger
- * /users/verify-2fa:
+ * /v1/verify-2fa:
  *   post:
  *     summary: Verify the 2FA code
  *     tags: [Users]
@@ -94,14 +103,14 @@ router.post('/v1/login', loginUser);
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - email
+ *               - code
  *             properties:
  *               email:
  *                 type: string
  *               code:
  *                 type: string
- *             required:
- *               - email
- *               - code
  *     responses:
  *       200:
  *         description: 2FA verified successfully, token provided
@@ -114,7 +123,7 @@ router.post('/v1/verify-2fa', verify2FA);
 
 /**
  * @swagger
- * /users/profile:
+ * /v1/profile:
  *   put:
  *     summary: Update user profile
  *     tags: [Users]
@@ -141,11 +150,11 @@ router.post('/v1/verify-2fa', verify2FA);
  *       500:
  *         description: Internal Server Error
  */
-router.put('/v1/profile', authenticateToken, updateUserProfile); // Add the authentication middleware
+router.put('/v1/profile', authenticateToken, updateUserProfile);
 
 /**
  * @swagger
- * /users/request-password-reset:
+ * /v1/request-password-reset:
  *   post:
  *     summary: Request a password reset
  *     tags: [Users]
@@ -155,11 +164,11 @@ router.put('/v1/profile', authenticateToken, updateUserProfile); // Add the auth
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - email
  *             properties:
  *               email:
  *                 type: string
- *             required:
- *               - email
  *     responses:
  *       200:
  *         description: Password reset token sent to email
@@ -172,7 +181,7 @@ router.post('/v1/request-password-reset', requestPasswordReset);
 
 /**
  * @swagger
- * /users/reset-password:
+ * /v1/reset-password:
  *   post:
  *     summary: Reset the user's password
  *     tags: [Users]
@@ -182,14 +191,14 @@ router.post('/v1/request-password-reset', requestPasswordReset);
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - resetToken
+ *               - newPassword
  *             properties:
  *               resetToken:
  *                 type: string
  *               newPassword:
  *                 type: string
- *             required:
- *               - resetToken
- *               - newPassword
  *     responses:
  *       200:
  *         description: Password has been reset successfully
