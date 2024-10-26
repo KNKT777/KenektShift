@@ -1,22 +1,20 @@
 # Dockerfile for KenektShift Backend
 
-# Base image for Node
-FROM node:18-alpine
-
-# Set working directory in the container
+# Build stage
+FROM node:18-alpine AS builder
 WORKDIR /usr/src/app
-
-# Copy package.json and package-lock.json
 COPY package*.json ./
-
-# Install dependencies
-RUN npm install && npm install -g nodemon
-
-# Copy all source files to the container
+RUN npm install
 COPY . .
 
-# Explicitly copy GraphQL files
+# Production stage
+FROM node:18-alpine
+WORKDIR /usr/src/app
+COPY --from=builder /usr/src/app .
+RUN npm install -g nodemon
+RUN mkdir -p /usr/src/app/graphql_gateway
 COPY graphql_gateway/schema.graphql graphql_gateway/resolvers.js /usr/src/app/graphql_gateway/
+# Remove COPY for .env here
 
 # Expose the port the app runs on
 EXPOSE 5002
