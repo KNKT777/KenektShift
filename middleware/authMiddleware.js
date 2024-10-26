@@ -1,2 +1,6 @@
-import authService from '../services/authService.js';
-export default authService;
+// authMiddleware.js
+
+import { authenticateToken, requireRole } from '../services/authService.js';
+
+// Export the middleware functions if needed elsewhere
+export { authenticateToken, requireRole };
