@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://user-service:5004'; // Update the port if necessary
+const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://user-service:5004'; 
 
 // Register a new user
 export const registerUser = async (req, res) => {
@@ -178,3 +178,27 @@ export const resetPassword = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
+
+// Helper function to handle errors
+const handleErrorResponse = (err, res) => {
+    console.error('Error:', err.message);
+    if (err.response) {
+      return res.status(err.response.status).json({ error: err.response.data.error });
+    }
+    res.status(500).json({ error: 'Server error' });
+  };
+  
+  // Example usage in your registerUser function
+  try {
+    const response = await axios.post(`${USER_SERVICE_URL}/v1/register`, {
+      name,
+      email,
+      password,
+      user_type,
+      phone,
+    });
+    res.status(201).json(response.data);
+  } catch (err) {
+    handleErrorResponse(err, res);
+  }
+  

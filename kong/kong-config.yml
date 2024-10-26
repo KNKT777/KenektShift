@@ -1,38 +1,38 @@
+# kong.conf
 
-    services:
-      - name: user_service
-        url: http://user_service:5001
-        routes:
-          - name: user_route
-            paths:
-              - /user
-            plugins:
-              - name: rate-limiting
-                config:
-                  minute: 50
-                  hour: 1000
+services:
+  - name: user_service
+    url: http://user_service:5001
+    routes:
+      - name: user_route
+        paths:
+          - /user
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 50
+              hour: 1000
 
-      - name: job_management_service
-        url: http://job_management_service:5002
-        routes:
-          - name: job_route
-            paths:
-              - /jobs
-            plugins:
-              - name: rate-limiting
-                config:
-                  minute: 30
-                  hour: 500
+  - name: job_management_service
+    url: http://job_management_service:5002
+    routes:
+      - name: job_route
+        paths:
+          - /jobs
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 30
+              hour: 500
 
-      - name: billing_service
-        url: http://billing_service:5003
-        routes:
-          - name: billing_route
-            paths:
-              - /billing
-            plugins:
-              - name: rate-limiting
-                config:
-                  minute: 20
-                  hour: 200
-    
+  - name: billing_service
+    url: http://billing_service:5003
+    routes:
+      - name: billing_route
+        paths:
+          - /billing
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 20
+              hour: 200

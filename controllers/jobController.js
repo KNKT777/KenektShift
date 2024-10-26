@@ -1,6 +1,5 @@
-const { pool } = require('../config/db');
-const { sendEmail } = require('../config/emailService');
-const cron = require('node-cron');
+import { sendEmail } from '../config/emailService.js';
+import cron from 'node-cron';
 
 // Auto-close jobs after 30 days
 const expireJobs = async () => {
