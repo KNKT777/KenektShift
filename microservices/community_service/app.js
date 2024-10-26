@@ -27,7 +27,9 @@
 
       socket.on('sendMessage', async (data) => {
         try {
-          const { room, sender_id, content } = data;
+          const { room, sender_id, content } catch (error) {
+  console.error(error);
+} = data;
           await pool.query(
             'INSERT INTO community_messages (room, sender_id, content, timestamp) VALUES ($1, $2, $3, NOW())',
             [room, sender_id, content]

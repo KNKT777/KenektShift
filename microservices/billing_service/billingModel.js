@@ -1,3 +1,4 @@
+import express from 'express';
 // Updated billingModel.js - Billing Model with PostgreSQL Queries
 
 import { pool } from '../config/db.js';

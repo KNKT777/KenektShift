@@ -1,3 +1,4 @@
+import express from 'express';
 import { sendEmail } from '../config/emailService.js';
 import cron from 'node-cron';
 
@@ -12,7 +13,9 @@ const expireJobs = async () => {
             sendEmail(
                 'admin@example.com', // Replace with appropriate admin email or dynamic email address
                 'Job Auto-Closed',
-                `Your job titled "${job.title}" has been automatically closed due to inactivity.`
+                `Your job titled "${job.title} catch (error) {
+  console.error(error);
+}" has been automatically closed due to inactivity.`
             );
         });
 
@@ -33,7 +36,9 @@ const notifyJobExpiring = async () => {
             sendEmail(
                 'admin@example.com', // Replace with appropriate admin email or dynamic email address
                 'Job Expiring Soon',
-                `Your job titled "${job.title}" will expire in 5 days. Please take action if necessary.`
+                `Your job titled "${job.title} catch (error) {
+  console.error(error);
+}" will expire in 5 days. Please take action if necessary.`
             );
         });
 
@@ -66,7 +71,9 @@ const postJob = async (req, res) => {
         sendEmail(
             'admin@example.com', // Replace with appropriate admin email or dynamic email address
             'New Job Posted',
-            `A new job titled "${title}" has been posted in ${location}.`
+            `A new job titled "${title} catch (error) {
+  console.error(error);
+}" has been posted in ${location}.`
         );
 
         res.status(201).json(result.rows[0]);
@@ -107,7 +114,9 @@ const applyForJob = async (req, res) => {
         sendEmail(
             'admin@example.com', // Replace with appropriate admin email or dynamic email address
             'New Job Application',
-            `A new application has been submitted for Job ID: ${job_id}.`
+            `A new application has been submitted for Job ID: ${job_id} catch (error) {
+  console.error(error);
+}.`
         );
 
         res.status(201).json(result.rows[0]);
@@ -129,7 +138,9 @@ const updateJob = async (req, res) => {
         );
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Job not found' });
+            return res.status(404).json({ error: 'Job not found' } catch (error) {
+  console.error(error);
+});
         }
 
         res.status(200).json(result.rows[0]);
@@ -209,7 +220,9 @@ const updateApplicationStatus = async (req, res) => {
         );
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Application not found' });
+            return res.status(404).json({ error: 'Application not found' } catch (error) {
+  console.error(error);
+});
         }
 
         sendEmail(
@@ -236,7 +249,9 @@ const deleteJob = async (req, res) => {
         );
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Job not found' });
+            return res.status(404).json({ error: 'Job not found' } catch (error) {
+  console.error(error);
+});
         }
 
         res.status(200).json({ message: `Job titled "${result.rows[0].title}" deleted successfully.` });

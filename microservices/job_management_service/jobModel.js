@@ -1,3 +1,4 @@
+import express from 'express';
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/db';
 

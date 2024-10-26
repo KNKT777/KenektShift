@@ -1,3 +1,4 @@
+import express from 'express';
 // Updated auth.js - Authentication Middleware with ES Module Syntax
 
 import jwt from 'jsonwebtoken';

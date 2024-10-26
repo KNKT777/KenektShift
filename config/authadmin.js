@@ -1,3 +1,4 @@
+import express from 'express';
 import jwt from 'jsonwebtoken';
 
 const authenticateAdmin = (req, res, next) => {

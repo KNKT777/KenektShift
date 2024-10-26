@@ -1,3 +1,4 @@
+import express from 'express';
 
     const badges = [
       { name: 'Job Starter', description: 'Complete your first job', condition: (user) => user.jobsCompleted >= 1 },

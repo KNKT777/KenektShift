@@ -15,7 +15,9 @@
           [userId, step, 'in_progress']
         );
         logDataAccess(userId, 'start_onboarding', 'onboarding', 'User started onboarding process');
-        res.status(201).json({ message: 'Onboarding process started successfully' });
+        res.status(201).json({ message: 'Onboarding process started successfully' } catch (error) {
+  console.error(error);
+});
       } catch (error) {
         console.error('Error starting onboarding:', error);
         res.status(500).json({ error: 'Error starting onboarding' });
@@ -31,7 +33,9 @@
           [step, status, userId]
         );
         logDataAccess(userId, 'update_onboarding', 'onboarding', 'User updated onboarding progress');
-        res.status(200).json({ message: 'Onboarding progress updated successfully' });
+        res.status(200).json({ message: 'Onboarding progress updated successfully' } catch (error) {
+  console.error(error);
+});
       } catch (error) {
         console.error('Error updating onboarding:', error);
         res.status(500).json({ error: 'Error updating onboarding' });

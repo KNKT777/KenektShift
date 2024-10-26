@@ -1,3 +1,4 @@
+import express from 'express';
 
     import redis from 'redis';
     import { promisify } from 'util';
@@ -16,7 +17,9 @@
         const cachedData = await getAsync(key);
         if (cachedData) {
           return res.status(200).json(JSON.parse(cachedData));
-        }
+        } catch (error) {
+  console.error(error);
+}
         res.sendResponse = res.send;
         res.send = async (body) => {
           await setAsync(key, JSON.stringify(body), 'EX', 60 * 5); // Cache for 5 minutes

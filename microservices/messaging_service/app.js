@@ -50,7 +50,9 @@ io.on('connection', (socket) => {
       return socket.emit('error', { error: 'Unauthorized message sender' });
     }
     try {
-      const { sender_id, receiver_id, content } = data;
+      const { sender_id, receiver_id, content } catch (error) {
+  console.error(error);
+} = data;
       const encryptedContent = encrypt(content);
 
       // Store the message in the database
@@ -89,7 +91,9 @@ app.get('/messages/:userId', async (req, res) => {
     const messages = result.rows.map((message) => ({
       ...message,
       content: decrypt(message.content),
-    }));
+    } catch (error) {
+  console.error(error);
+}));
 
     res.status(200).json(messages);
   } catch (error) {
@@ -106,7 +110,9 @@ app.post('/messages/:messageId/read', async (req, res) => {
   try {
     const messageId = req.params.messageId;
     await pool.query('UPDATE messages SET status = $1 WHERE id = $2', ['read', messageId]);
-    res.status(200).json({ status: 'Message marked as read' });
+    res.status(200).json({ status: 'Message marked as read' } catch (error) {
+  console.error(error);
+});
   } catch (error) {
     console.error('Error updating message status:', error);
     res.status(500).json({ error: 'Error updating message status' });

@@ -1,3 +1,4 @@
+import express from 'express';
 
     import Keycloak from 'keycloak-connect';
     import session from 'express-session';

@@ -1,3 +1,4 @@
+import express from 'express';
 import 'winston-daily-rotate-file';
 
 // Properly declare and define the logger variable

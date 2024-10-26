@@ -1,3 +1,4 @@
+import express from 'express';
 // emailService.js - Email Service for Sending General Emails
 
 import nodemailer from 'nodemailer';

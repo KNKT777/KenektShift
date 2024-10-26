@@ -1,3 +1,4 @@
+import express from 'express';
 
     import { getAllJobs } from '../models/jobModel.js';
     import { cosineSimilarity } from 'ml-similarity';

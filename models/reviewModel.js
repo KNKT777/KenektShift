@@ -1,3 +1,4 @@
+import express from 'express';
 // Updated reviewModel.js - User Review Model for SQL
 
 import { DataTypes } from 'sequelize';

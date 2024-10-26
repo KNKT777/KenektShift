@@ -1,3 +1,4 @@
+import express from 'express';
 // Auth service for user authentication
 import logger from '../config/logger.js';
 import jwt from 'jsonwebtoken';

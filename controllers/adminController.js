@@ -1,3 +1,4 @@
+import express from 'express';
 
 // Get all users
 const getAllUsers = async (req, res) => {
@@ -52,7 +53,9 @@ const deleteJob = async (req, res) => {
 
     try {
         await pool.query('DELETE FROM jobs WHERE id = $1', [jobId]);
-        res.status(200).json({ message: 'Job deleted successfully' });
+        res.status(200).json({ message: 'Job deleted successfully' } catch (error) {
+  console.error(error);
+});
     } catch (err) {
         console.error('Error deleting job:', err);
         res.status(500).json({ error: 'Server error' });
@@ -65,7 +68,9 @@ const deleteUser = async (req, res) => {
 
     try {
         await pool.query('DELETE FROM users WHERE id = $1', [userId]);
-        res.status(200).json({ message: 'User deleted successfully' });
+        res.status(200).json({ message: 'User deleted successfully' } catch (error) {
+  console.error(error);
+});
     } catch (err) {
         console.error('Error deleting user:', err);
         res.status(500).json({ error: 'Server error' });

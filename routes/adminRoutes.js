@@ -1,5 +1,7 @@
 // Updated adminRoutes.js - Admin Endpoints with ES Module Syntax
 
+import express from 'express';
+
 import authenticateAdmin from '../config/authAdmin.js';  // Admin authentication middleware
 
 const router = express.Router();

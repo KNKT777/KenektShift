@@ -1,3 +1,4 @@
+import express from 'express';
 // authMiddleware.js
 
 import jwt from 'jsonwebtoken';

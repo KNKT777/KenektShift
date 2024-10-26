@@ -15,7 +15,9 @@
           [userId, type, content, 'unread']
         );
         logDataAccess(userId, 'create_notification', 'notification', 'Notification created for user');
-        res.status(201).json({ message: 'Notification created successfully' });
+        res.status(201).json({ message: 'Notification created successfully' } catch (error) {
+  console.error(error);
+});
       } catch (error) {
         console.error('Error creating notification:', error);
         res.status(500).json({ error: 'Error creating notification' });

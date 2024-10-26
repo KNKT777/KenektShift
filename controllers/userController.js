@@ -1,3 +1,4 @@
+import express from 'express';
 // userController.js
 
 import axios from 'axios';
@@ -18,7 +19,9 @@ export const registerUser = async (req, res) => {
 
   try {
     // Make a request to the user microservice
-    const response = await axios.post(`${USER_SERVICE_URL}/v1/register`, {
+    const response = await axios.post(`${USER_SERVICE_URL} catch (error) {
+  console.error(error);
+}/v1/register`, {
       name,
       email,
       password,
@@ -49,7 +52,9 @@ export const loginUser = async (req, res) => {
 
   try {
     // Make a request to the user microservice
-    const response = await axios.post(`${USER_SERVICE_URL}/v1/login`, {
+    const response = await axios.post(`${USER_SERVICE_URL} catch (error) {
+  console.error(error);
+}/v1/login`, {
       email,
       password,
     });
@@ -76,7 +81,9 @@ export const verify2FA = async (req, res) => {
 
   try {
     // Make a request to the user microservice
-    const response = await axios.post(`${USER_SERVICE_URL}/v1/verify-2fa`, {
+    const response = await axios.post(`${USER_SERVICE_URL} catch (error) {
+  console.error(error);
+}/v1/verify-2fa`, {
       email,
       code,
     });
@@ -104,7 +111,9 @@ export const updateUserProfile = async (req, res) => {
 
   try {
     // Make a request to the user microservice
-    const response = await axios.put(`${USER_SERVICE_URL}/v1/profile`, {
+    const response = await axios.put(`${USER_SERVICE_URL} catch (error) {
+  console.error(error);
+}/v1/profile`, {
       name,
       profile_picture,
       phone,
@@ -136,7 +145,9 @@ export const requestPasswordReset = async (req, res) => {
 
   try {
     // Make a request to the user microservice
-    const response = await axios.post(`${USER_SERVICE_URL}/v1/request-password-reset`, {
+    const response = await axios.post(`${USER_SERVICE_URL} catch (error) {
+  console.error(error);
+}/v1/request-password-reset`, {
       email,
     });
 
@@ -162,7 +173,9 @@ export const resetPassword = async (req, res) => {
 
   try {
     // Make a request to the user microservice
-    const response = await axios.post(`${USER_SERVICE_URL}/v1/reset-password`, {
+    const response = await axios.post(`${USER_SERVICE_URL} catch (error) {
+  console.error(error);
+}/v1/reset-password`, {
       resetToken,
       newPassword,
     });
@@ -190,7 +203,9 @@ const handleErrorResponse = (err, res) => {
   
   // Example usage in your registerUser function
   try {
-    const response = await axios.post(`${USER_SERVICE_URL}/v1/register`, {
+    const response = await axios.post(`${USER_SERVICE_URL} catch (error) {
+  console.error(error);
+}/v1/register`, {
       name,
       email,
       password,

@@ -1,3 +1,4 @@
+import express from 'express';
 import { body, validationResult } from 'express-validator';
 // Updated userController.js - Added Password Reset Feature
 
@@ -51,7 +52,9 @@ export const loginUser = async (req, res) => {
         const user = userResult.rows[0];
 
         if (!user || !(await bcrypt.compare(password, user.password_hash))) {
-            return res.status(400).json({ error: 'Invalid email or password' });
+            return res.status(400).json({ error: 'Invalid email or password' } catch (error) {
+  console.error(error);
+});
         }
 
         // Generate a 2FA code
@@ -85,7 +88,9 @@ export const verify2FA = async (req, res) => {
         const user = result.rows[0];
 
         if (!user || user.twofa_code !== code) {
-            return res.status(400).json({ error: 'Invalid 2FA code' });
+            return res.status(400).json({ error: 'Invalid 2FA code' } catch (error) {
+  console.error(error);
+});
         }
 
         // Once the 2FA code is verified, generate the JWT token
@@ -142,7 +147,9 @@ export const requestPasswordReset = async (req, res) => {
         const user = userResult.rows[0];
 
         if (!user) {
-            return res.status(400).json({ error: 'No account found with that email address' });
+            return res.status(400).json({ error: 'No account found with that email address' } catch (error) {
+  console.error(error);
+});
         }
 
         // Generate a password reset token
@@ -180,7 +187,9 @@ export const resetPassword = async (req, res) => {
         const user = userResult.rows[0];
 
         if (!user) {
-            return res.status(400).json({ error: 'Invalid or expired reset token' });
+            return res.status(400).json({ error: 'Invalid or expired reset token' } catch (error) {
+  console.error(error);
+});
         }
 
         // Hash the new password

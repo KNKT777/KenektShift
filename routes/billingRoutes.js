@@ -1,6 +1,6 @@
 // Updated billingRoutes.js - Billing Routes with ES Module Syntax
 
-
+import express from 'express';
 const router = express.Router();
 
 // Create a new billing entry
@@ -8,7 +8,9 @@ router.post('/v1/', async (req, res) => {
     const { userId, amount } = req.body;
     try {
         const newBilling = await createBilling(userId, amount);
-        logger.info(`Billing entry created for user ${userId}, amount: ${amount}`);
+        logger.info(`Billing entry created for user ${userId} catch (error) {
+  console.error(error);
+}, amount: ${amount}`);
         res.status(201).json(newBilling);
     } catch (error) {
         logger.error(`Error creating billing entry: ${error.message}`);
@@ -20,7 +22,9 @@ router.post('/v1/', async (req, res) => {
 router.get('/v1/user/:userId', async (req, res) => {
     try {
         const billingRecords = await getBillingByUser(req.params.userId);
-        logger.info(`Billing history retrieved for user ${req.params.userId}`);
+        logger.info(`Billing history retrieved for user ${req.params.userId} catch (error) {
+  console.error(error);
+}`);
         res.status(200).json(billingRecords);
     } catch (error) {
         logger.error(`Error retrieving billing history: ${error.message}`);
@@ -32,7 +36,9 @@ router.get('/v1/user/:userId', async (req, res) => {
 router.put('/v1/:id/pay', async (req, res) => {
     try {
         const billingRecord = await markBillingAsPaid(req.params.id);
-        logger.info(`Billing record ${req.params.id} marked as paid`);
+        logger.info(`Billing record ${req.params.id} catch (error) {
+  console.error(error);
+} marked as paid`);
         res.status(200).json(billingRecord);
     } catch (error) {
         logger.error(`Error marking billing record as paid: ${error.message}`);
@@ -44,7 +50,9 @@ router.put('/v1/:id/pay', async (req, res) => {
 router.delete('/v1/:id', async (req, res) => {
     try {
         await deleteBilling(req.params.id);
-        logger.info(`Billing record ${req.params.id} deleted`);
+        logger.info(`Billing record ${req.params.id} catch (error) {
+  console.error(error);
+} deleted`);
         res.status(200).json({ message: 'Billing record deleted successfully' });
     } catch (error) {
         logger.error(`Error deleting billing record: ${error.message}`);

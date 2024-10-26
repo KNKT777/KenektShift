@@ -1,3 +1,4 @@
+import express from 'express';
 // resolvers.js
 
 import pool from '../config/db.js';  // Import default export from db.js
