@@ -1,6 +1,3 @@
-// Updated Twilio Service - Twilio Integration
-
-import express from 'express';
 import dotenv from 'dotenv';
 import twilio from 'twilio';
 

@@ -1,8 +1,11 @@
 // Updated jobRoutes.js - Job Routes with ES Module Syntax
 
 import express from 'express';
+import dotenv from 'dotenv';
 import { getAllJobs, postJob, updateJob, deleteJob, expireJobs, notifyJobExpiring, applyForJob, getFilteredJobs, getUserApplications, updateApplicationStatus, getAllApplications } from '../controllers/jobController.js';
 import authenticateToken from '../config/auth.js';
+
+dotenv.config();
 
 const router = express.Router();
 

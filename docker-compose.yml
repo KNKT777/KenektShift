@@ -3,7 +3,7 @@ version: '3.8'
 services:
   app:
     build:
-      context: .
+      context: ./KenektShift  # Ensure this is the correct path to your application
       dockerfile: Dockerfile
     ports:
       - "5002:5002"
@@ -21,9 +21,8 @@ services:
       - DB_NAME=kenektshift
       - REDIS_HOST=redis
       - USER_SERVICE_URL=http://user-service:5004
-
     volumes:
-      - .:/app
+      - ./KenektShift:/usr/src/app
 
   db:
     image: postgres:13
@@ -32,7 +31,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: kenektshift
     ports:
-      - "5433:5432"  # Changed to avoid conflict with default PostgreSQL instance
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -151,7 +150,6 @@ services:
 networks:
   default:
     driver: bridge
-
 
 volumes:
   pgdata:

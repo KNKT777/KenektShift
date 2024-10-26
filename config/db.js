@@ -1,5 +1,3 @@
-import express from 'express';
-
 import pkg from 'pg';
 const { Pool } = pkg;
 
@@ -21,5 +19,4 @@ export default pool;
 if (!process.env.PG_USER || !process.env.PG_HOST || !process.env.PG_DATABASE || !process.env.PG_PASSWORD || !process.env.PG_PORT) {
     console.error('Missing one or more PostgreSQL environment variables.');
     process.exit(1);
-  }
-  
+}

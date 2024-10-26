@@ -1,7 +1,7 @@
 // Updated reviewRoutes.js - Review Routes for SQL Integration
 
 import express from 'express';
-import pool from '../config/db'; // Assuming the database pool is imported from this path
+import db from '../config/db.js';
 
 const router = express.Router();
 

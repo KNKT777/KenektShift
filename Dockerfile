@@ -9,8 +9,8 @@ WORKDIR /usr/src/app
 # Copy package.json and package-lock.json to the container
 COPY package*.json ./
 
-# Install all dependencies
-RUN npm install
+# Install all dependencies including development dependencies with --legacy-peer-deps to avoid conflicts
+RUN npm install --include=dev --legacy-peer-deps
 
 # Copy all the source code into the container
 COPY . .
