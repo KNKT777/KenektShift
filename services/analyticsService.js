@@ -1,19 +1,30 @@
+import dotenv from 'dotenv';
+import mixpanel from 'mixpanel';
 
-    import mixpanel from 'mixpanel';
+dotenv.config();
 
-    const mixpanelClient = mixpanel.init(process.env.MIXPANEL_TOKEN);
+const mixpanelToken = process.env.MIXPANEL_TOKEN;
 
-    export const trackEvent = (eventName, properties) => {
-      mixpanelClient.track(eventName, properties);
-    };
+if (!mixpanelToken) {
+  console.error('Mixpanel token is not defined. Please set MIXPANEL_TOKEN in your .env file.');
+}
 
-    export const trackUserSignup = (user) => {
-      trackEvent('User Signup', {
-        userId: user.id,
-        email: user.email,
-        createdAt: user.createdAt,
-      });
-    };
+const mixpanelClient = mixpanelToken ? mixpanel.init(mixpanelToken) : null;
 
-    export default mixpanelClient;
-    
+export const trackEvent = (eventName, properties) => {
+  if (!mixpanelClient) {
+    console.log('Mixpanel client is not configured. Skipping event tracking.');
+    return;
+  }
+  mixpanelClient.track(eventName, properties);
+};
+
+export const trackUserSignup = (user) => {
+  trackEvent('User Signup', {
+    userId: user.id,
+    email: user.email,
+    createdAt: user.createdAt,
+  });
+};
+
+export default mixpanelClient;
