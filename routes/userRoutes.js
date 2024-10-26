@@ -1,4 +1,4 @@
-// Updated userRoutes.js - User Routes for CRUD Operations with Swagger Annotations
+// userRoutes.js - User Routes for CRUD Operations with Swagger Annotations
 
 import express from 'express';
 import {
